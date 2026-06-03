@@ -4,7 +4,7 @@ import sqlite3
 import hashlib
 
 # 1. 페이지 설정 및 제목 (물고기 및 바다 컨셉 아이콘 변경)
-st.set_page_config(page_title="Self Thinking Chatbot v1", page_icon="🐟", layout="centered")
+st.set_page_config(page_title="Beta-T", page_icon="🐟", layout="centered")
 
 # CSS 스타일 주입 (어디 하나 튀지 않는 완벽한 심해 다크 네이비 테마)
 css_style = """
@@ -225,8 +225,8 @@ with st.sidebar:
         st.rerun()
 
 # 바다 컨셉 메인 타이틀 노출
-st.title(f"🐳 안녕하세요 {st.session_state.username} 님! \n 저는 Beta-T에요")
-st.caption("이 챗봇은 당신이 스스로 답을 찾을 수 있도록 도와줍니다.")
+st.title(f"🐳 안녕하세요 {st.session_state.username} 님!")
+st.caption("Beta-T가 당신이 스스로 답을 찾을 수 있도록 도와줍니다.")
 
 # 바다 정렬 레이아웃 출력
 st.markdown('<div class="chat-container">', unsafe_allow_html=True)
