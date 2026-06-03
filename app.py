@@ -192,7 +192,44 @@ with st.sidebar:
             st.rerun()
     else:
         st.caption("로그인 후 서비스를 이용하실 수 있습니다.")
+# 🤫 [비밀 공간] 사이드바 본문을 띄우기 위한 빈 여백 확보 후 구석에 배치
+    st.write("")
+    st.write("")
+    
+    # 클래스 주입으로 크기와 투명도를 극대화한 ⚙️ 버튼
+    st.markdown('<div class="admin-secret-btn">', unsafe_allow_html=True)
+    if st.button("⚙️"):
+        st.session_state.show_admin = not st.session_state.show_admin
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
+
+# --- 6. 비밀 메뉴 활성화 시 노출되는 오버레이 인증 창 ---
+if st.session_state.show_admin:
+    st.warning("⚠️ 시스템 관리자 검증 모드 활성화됨")
+    admin_password = st.text_input("마스터 권한 인증 암호를 입력하세요", type="password", key="admin_menu_pass")
+    
+    # 본인만 알 수 있는 마스터 비밀번호 설정 (예: admin1234)
+    if admin_password == "admin1234": 
+        st.success("인증 완료. 실시간 회원 명부를 로드했습니다.")
+        conn = sqlite3.connect("users.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT username, password FROM users")
+        rows = cursor.fetchall()
+        conn.close()
+        
+        if rows:
+            df = pd.DataFrame(rows, columns=["아이디 (Username)", "암호화된 비번 (Hash)"])
+            st.dataframe(df, use_container_width=True)
+        else:
+            st.info("현재 가입된 회원이 아무도 없습니다.")
+            
+        if st.button("🔧 관리자 모드 끄기"):
+            st.session_state.show_admin = False
+            st.rerun()
+    elif admin_password:
+        st.error("X 마스터 비밀번호가 틀렸습니다.")
+    st.markdown("---")
 
 # --- 6. 비로그인 화면 (로그인 / 회원가입) ---
 if not st.session_state.logged_in:
