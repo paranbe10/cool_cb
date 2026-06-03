@@ -189,9 +189,12 @@ with st.sidebar:
         st.caption("로그인 후 서비스를 이용하실 수 있습니다.")
     
     # 🤫 [비밀 공간] 사이드바 본문을 띄우기 위한 빈 여백 확보 후 구석에 배치
-    st.write("/*")
-    st.write("/*")
-    
+    st.write("")
+    st.write("")
+    st.write("")
+    st.write("")
+    st.write("")
+    st.write("")
     # 클래스 주입으로 크기와 투명도를 극대화한 ⚙️ 버튼
     st.markdown('<div class="admin-secret-btn">', unsafe_allow_html=True)
     if st.button("관리자"):
