@@ -213,7 +213,7 @@ if "messages" not in st.session_state or "chat_session" not in st.session_state:
     init_new_chat()
 
 with st.sidebar:
-    st.subheader(f"🐟 {st.session_state.username}")
+    st.subheader(f"🐟 {st.session_state.username}님")
     if st.button("새 대화 시작하기", use_container_width=True):
         init_new_chat()
         st.rerun()
