@@ -45,7 +45,7 @@ if "messages" not in st.session_state:
 if "chat_session" not in st.session_state:
     # 모델 설정 시 system_instruction을 주입합니다.
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash", # 빠르고 가벼운 플래시 모델 추천
+        model_name="gemini-2.5-flash", # 빠르고 가벼운 플래시 모델 추천
         system_instruction=system_instruction
     )
     st.session_state.chat_session = model.start_chat(history=[])
