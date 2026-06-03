@@ -40,7 +40,7 @@ css_style = """
         padding: 30px 24px; /* 좌우 여백을 넓혀 둥근 모양이 찌그러지지 않게 조절 */
         max-width: 78%;
         font-size: 15px;
-        line-height: 1.5; /* 글자 정렬이 붙어 보이지 않도록 줄간격 확장 */
+        line-height: 0.5; /* 글자 정렬이 붙어 보이지 않도록 줄간격 확장 */
         word-break: break-word;
         transition: all 0.3s ease;
     }
