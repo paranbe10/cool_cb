@@ -4,12 +4,12 @@ import sqlite3
 import hashlib
 
 # 1. 페이지 설정 및 제목 (물고기 및 바다 컨셉 아이콘 변경)
-st.set_page_config(page_title="Beta-T", page_icon="🐟", layout="centered")
+st.set_page_config(page_title="Deep Sea Thinking Chatbot v1", page_icon="🐟", layout="centered")
 
-# CSS 스타일 주입 (어디 하나 튀지 않는 완벽한 심해 다크 네이비 테마)
+# CSS 스타일 주입 (라이트 모드에서도 다크 테마를 강제 고정하는 완벽 방어형 CSS)
 css_style = """
 <style>
-    /* 앱 전체 배경: 하단 입력창과 자연스럽게 매칭되는 고급스러운 심해 네이비 고정 */
+    /* 앱 전체 배경: 어떤 모드에서도 고급스러운 심해 네이비 고정 */
     .stApp {
         background-color: #060d19 !important;
         color: #e0f2fe;
@@ -21,11 +21,48 @@ css_style = """
         border-right: 1px solid #00b4d822 !important;
     }
     
+    /* 🚨 [라이트 모드 완벽 방어] 입력창, 셀렉트박스, 버튼 다크 스타일 강제 고정 */
+    div[data-testid="stTextInput"] input {
+        background-color: #0f1a2c !important;
+        color: #e2f1ff !important;
+        border: 1px solid #00b4d844 !important;
+    }
+    div[data-testid="stSelectbox"] [data-baseweb="select"] {
+        background-color: #0f1a2c !important;
+        color: #e2f1ff !important;
+        border: 1px solid #00b4d844 !important;
+    }
+    /* 셀렉트박스 클릭 시 나오는 드롭다운 메뉴 팝업 방어 */
+    div[data-baseweb="popover"], div[data-baseweb="menu"] {
+        background-color: #0f1a2c !important;
+        color: #e2f1ff !important;
+    }
+    div[data-baseweb="popover"] li {
+        background-color: transparent !important;
+        color: #e2f1ff !important;
+    }
+    div[data-baseweb="popover"] li:hover {
+        background-color: #0077b6 !important;
+    }
+    
+    /* 일반 버튼 스타일 강제 고정 및 호버 효과 */
+    div.stButton > button {
+        background-color: #0f1a2c !important;
+        color: #e2f1ff !important;
+        border: 1px solid #00b4d866 !important;
+        transition: all 0.2s ease;
+    }
+    div.stButton > button:hover {
+        background-color: #0077b6 !important;
+        border-color: #00b4d8 !important;
+        color: #ffffff !important;
+    }
+    
     /* 대화 컨테이너 간격 및 스크롤 여백 */
     .chat-container {
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 40px;
         margin-top: 25px;
         margin-bottom: 25px;
         width: 100%;
@@ -41,38 +78,39 @@ css_style = """
         justify-content: flex-start;
     }
     
-    /* 말풍선 공통: 상하 여백을 16px로 널찍하게 늘려 가독성 극대화 */
+    /* 말풍선 공통: 상하 여백 늘림 및 줄바꿈 코드 보존 */
     .message-box {
         padding: 16px 24px; 
         max-width: 78%;
         font-size: 15px;
         line-height: 1.6;
         word-break: break-word;
+        white-space: pre-wrap; /* 줄바꿈 기능 유지 */
         transition: all 0.3s ease;
         margin-top: 5px;
         margin-bottom: 5px;
     }
     
-    /* 사용자 말풍선: 전체 톤과 조화를 이루는 세련된 아쿠아 마린 그라데이션 */
+    /* 사용자 말풍선 */
     .user-msg {
         background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
         color: #ffffff;
-        border-radius: 24px 24px 4px 24px; /* 유선형 조약돌 곡선 */
+        border-radius: 24px 24px 4px 24px;
         box-shadow: 0px 4px 15px rgba(0, 180, 216, 0.2);
         font-weight: 500;
     }
     
-    /* AI 말풍선: 배경색에 묻히지 않으면서 일체감을 주는 딥 블루 셸 + 아쿠아 라인 */
+    /* AI 말풍선 */
     .ai-msg {
         background-color: #0f1a2c;
         color: #e2f1ff;
-        border-radius: 24px 24px 24px 4px; /* 둥근 물방울 곡선 */
-        border: 1.5px solid #00b4d8; /* 세련되고 과감한 테두리 포인트 */
+        border-radius: 24px 24px 24px 4px;
+        border: 1.5px solid #00b4d8;
         box-shadow: 0px 4px 20px rgba(0, 180, 216, 0.15);
     }
     
-    /* 모든 텍스트 가독성을 맑고 투명한 아이스 블루 톤으로 일괄 보정 */
-    h1, h2, h3, p, span, label, .stMarkdown {
+    /* 모든 텍스트 컬러 보정 */
+    h1, h2, h3, p, span, label, .stMarkdown, div[data-testid="stWidgetLabel"] p {
         color: #e2f1ff !important;
     }
 </style>
@@ -203,7 +241,7 @@ if not st.session_state.logged_in:
     st.stop()
 
 
-# --- 2. 로그인 완료된 상태 (에러 방지를 위해 맨 앞으로 일렬 정렬) ---
+# --- 2. 로그인 완료된 상태 ---
 def init_new_chat():
     st.session_state.messages = []
     model = genai.GenerativeModel(model_name="gemini-2.5-flash", system_instruction=system_instruction)
@@ -213,7 +251,7 @@ if "messages" not in st.session_state or "chat_session" not in st.session_state:
     init_new_chat()
 
 with st.sidebar:
-    st.subheader(f"🐟 {st.session_state.username} 님")
+    st.subheader(f"🐟 {st.session_state.username}")
     if st.button("새 대화 시작하기", use_container_width=True):
         init_new_chat()
         st.rerun()
@@ -225,8 +263,8 @@ with st.sidebar:
         st.rerun()
 
 # 바다 컨셉 메인 타이틀 노출
-st.title(f"🐳 안녕하세요 {st.session_state.username} 님!")
-st.caption("Beta-T가 당신이 스스로 답을 찾을 수 있도록 도와줍니다.")
+st.title("🐳 안녕하세요! 저는 Beta-T에요")
+st.caption("이 챗봇은 당신이 스스로 답을 찾을 수 있도록 도와줍니다.")
 
 # 바다 정렬 레이아웃 출력
 st.markdown('<div class="chat-container">', unsafe_allow_html=True)
