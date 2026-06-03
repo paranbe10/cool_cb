@@ -4,7 +4,7 @@ import sqlite3
 import hashlib
 
 # 1. 페이지 설정 및 제목 (물고기 및 바다 컨셉 아이콘 변경)
-st.set_page_config(page_title="Deep Sea Thinking Chatbot v1", page_icon="🐟", layout="centered")
+st.set_page_config(page_title="Self Thinking Chatbot v1", page_icon="🐟", layout="centered")
 
 # CSS 스타일 주입 (어디 하나 튀지 않는 완벽한 심해 다크 네이비 테마)
 css_style = """
