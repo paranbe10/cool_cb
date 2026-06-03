@@ -4,7 +4,7 @@ import sqlite3
 import hashlib
 
 # 1. 페이지 설정 및 제목
-st.set_page_config(page_title="Deep Sea Thinking Chatbot v1", page_icon="🐟", layout="centered")
+st.set_page_config(page_title="Beta-T", page_icon="🐟", layout="centered")
 
 # 2. 세션 상태 초기화 및 새로고침 자동 로그인 감지
 if "logged_in" not in st.session_state:
@@ -77,10 +77,6 @@ You are a strict Socratic guide and cognitive coach. Your primary objective is t
 2. NO "MOTHERING" OR PROVIDING OPTIONS: When the user is stuck, frustrated, or asks "What should I do?", DO NOT provide a list of options, choices, or potential answers. Providing choices creates dependency. Instead, force the user to generate their own options by asking them to look at the problem from a different angle or break it down into smaller parts.
 3. STEP-BY-STEP GUIDANCE: Guide the user through the thinking process one tiny step at a time. Ask only ONE open-ended question per turn. Never overwhelm them.
 4. IMMEDIATE FACTUAL INFORMATION: Provide objective facts, raw data, or definitions immediately if requested. However, the moment the task shifts to analyzing, reflecting, or making a decision based on that data, you must strictly revert to asking questions.
-
-# Handling User Roadblocks
-* WRONG AI Behavior: "If you're stuck, you could choose Topic A, Topic B, or Topic C. Which one do you like?" (X)
-* CORRECT AI Behavior: "It's completely normal to feel stuck at this point. Let's take a step back. If you had to explain the core issue to a 10-year-old in one sentence, what would you say?" (O)
 """
 
 def init_new_chat():
@@ -89,15 +85,87 @@ def init_new_chat():
     st.session_state.chat_session = model.start_chat(history=[])
 
 
-# 4. 통합 사이드바 구성 (테마 선택 + 회원 메뉴)
-with st.sidebar:
-    st.subheader("🎨 UI 테마 설정")
-    theme_choice = st.radio("화면 모드를 선택하세요", ["🌙 다크 모드", "☀️ 라이트 모드"], label_visibility="collapsed")
+# 4. 브라우저/시스템 테마를 알아서 감지하는 지능형 통합 CSS 주입
+auto_theme_css = """
+<style>
+    /* 📌 [공통 레이아웃 구조] */
+    .chat-container { display: flex; flex-direction: column; width: 100%; margin: 25px 0; }
+    .chat-row { display: flex; width: 100%; }
+    .user-row { justify-content: flex-end; }
+    .ai-row { justify-content: flex-start; }
+    .message-box { padding: 16px 24px; max-width: 78%; font-size: 15px; line-height: 1.6; word-break: break-word; white-space: pre-wrap; margin: 5px 0; }
+    div[data-testid="stChatInput"] { background-color: transparent !important; }
+    div[data-testid="stChatInput"] textarea { background-color: transparent !important; }
+    div[data-testid="stChatInput"] button { background-color: transparent !important; }
     
-    # 로그인 상태일 때만 추가 메뉴 노출
+    /* 사용자 말풍선은 모드 공통으로 청량한 블루 고정 (시인성 최적화) */
+    .user-msg { background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%); color: #ffffff !important; border-radius: 24px 24px 4px 24px; box-shadow: 0px 4px 12px rgba(0, 180, 216, 0.15); font-weight: 500; }
+    .user-msg * { color: #ffffff !important; }
+
+
+    /* 🌙 [1] 사용자가 다크 모드일 때 브라우저가 알아서 켜는 스타일 */
+    @media (prefers-color-scheme: dark) {
+        .stApp { background-color: #060d19 !important; color: #e0f2fe; }
+        [data-testid="stSidebar"] { background-color: #03070f !important; border-right: 1px solid #00b4d822 !important; }
+        
+        div[data-testid="stTextInput"] input, div[data-testid="stSelectbox"] [data-baseweb="select"] {
+            background-color: #0f1a2c !important; color: #e2f1ff !important; border: 1px solid #00b4d844 !important;
+        }
+        div[data-baseweb="popover"], div[data-baseweb="menu"] { background-color: #0f1a2c !important; color: #e2f1ff !important; }
+        div[data-baseweb="popover"] li { background-color: transparent !important; color: #e2f1ff !important; }
+        div[data-baseweb="popover"] li:hover { background-color: #0077b6 !important; }
+        
+        div.stButton > button { background-color: #0f1a2c !important; color: #e2f1ff !important; border: 1px solid #00b4d866 !important; }
+        div.stButton > button:hover { background-color: #0077b6 !important; border-color: #00b4d8 !important; color: #ffffff !important; }
+
+        div[data-testid="stChatInput"] > div { background-color: #0f1a2c !important; border: 1px solid #00b4d844 !important; }
+        div[data-testid="stChatInput"] textarea { color: #e2f1ff !important; }
+        div[data-testid="stChatInput"] button { color: #00b4d8 !important; }
+        
+        .chat-container { gap: 40px; }
+        .ai-msg { background-color: #0f1a2c; color: #e2f1ff !important; border-radius: 24px 24px 24px 4px; border: 1.5px solid #00b4d8; box-shadow: 0px 4px 20px rgba(0, 180, 216, 0.15); }
+        .ai-msg * { color: #e2f1ff !important; }
+        
+        h1, h2, h3, p, span, label, .stMarkdown, div[data-testid="stWidgetLabel"] p { color: #e2f1ff !important; }
+        .stCaption { color: #64748b !important; }
+    }
+
+
+    /* ☀️ [2] 사용자가 라이트 모드일 때 브라우저가 알아서 켜는 스타일 */
+    @media (prefers-color-scheme: light) {
+        .stApp { background-color: #ffffff !important; color: #1e293b; }
+        [data-testid="stSidebar"] { background-color: #f8fafc !important; border-right: 1px solid #e2e8f0 !important; }
+        
+        div[data-testid="stTextInput"] input, div[data-testid="stSelectbox"] [data-baseweb="select"] {
+            background-color: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important;
+        }
+        div[data-baseweb="popover"], div[data-baseweb="menu"] { background-color: #ffffff !important; color: #1e293b !important; }
+        div[data-baseweb="popover"] li { background-color: transparent !important; color: #1e293b !important; }
+        div[data-baseweb="popover"] li:hover { background-color: #f1f5f9 !important; }
+        
+        div.stButton > button { background-color: #ffffff !important; color: #0f172a !important; border: 1px solid #cbd5e1 !important; }
+        div.stButton > button:hover { background-color: #0077b6 !important; border-color: #0077b6 !important; color: #ffffff !important; }
+
+        div[data-testid="stChatInput"] > div { background-color: #ffffff !important; border: 1px solid #cbd5e1 !important; box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.05) !important; }
+        div[data-testid="stChatInput"] textarea { color: #1e293b !important; }
+        div[data-testid="stChatInput"] button { color: #0077b6 !important; }
+        
+        .chat-container { gap: 35px; }
+        .ai-msg { background-color: #f4f9fc; color: #1e293b !important; border-radius: 24px 24px 24px 4px; border: 1.5px solid #00b4d8; box-shadow: 0px 4px 15px rgba(0, 180, 216, 0.06); }
+        .ai-msg * { color: #1e293b !important; }
+        
+        h1, h2, h3, p, span, label, .stMarkdown, div[data-testid="stWidgetLabel"] p { color: #0f172a !important; }
+        .stCaption { color: #64748b !important; }
+    }
+</style>
+"""
+st.markdown(auto_theme_css, unsafe_allow_html=True)
+
+
+# 5. 깔끔해진 사이드바 (로그인 정보 및 회원 기능만 포함)
+with st.sidebar:
     if st.session_state.logged_in:
-        st.markdown("---")
-        st.subheader(f"🐟 {st.session_state.username} 탐험가님")
+        st.subheader(f"🐟 {st.session_state.username} 탐험가")
         if st.button("새 대화 시작하기", use_container_width=True):
             init_new_chat()
             st.rerun()
@@ -107,94 +175,8 @@ with st.sidebar:
             st.session_state.username = ""
             st.query_params.clear()
             st.rerun()
-
-
-# 5. 다크 모드 / 라이트 모드 CSS 분리 정의
-dark_css = """
-<style>
-    .stApp { background-color: #060d19 !important; color: #e0f2fe; }
-    [data-testid="stSidebar"] { background-color: #03070f !important; border-right: 1px solid #00b4d822 !important; }
-    
-    /* 입력창 및 셀렉트박스 */
-    div[data-testid="stTextInput"] input, div[data-testid="stSelectbox"] [data-baseweb="select"] {
-        background-color: #0f1a2c !important; color: #e2f1ff !important; border: 1px solid #00b4d844 !important;
-    }
-    div[data-baseweb="popover"], div[data-baseweb="menu"] { background-color: #0f1a2c !important; color: #e2f1ff !important; }
-    div[data-baseweb="popover"] li { background-color: transparent !important; color: #e2f1ff !important; }
-    div[data-baseweb="popover"] li:hover { background-color: #0077b6 !important; }
-    
-    /* 버튼 */
-    div.stButton > button { background-color: #0f1a2c !important; color: #e2f1ff !important; border: 1px solid #00b4d866 !important; }
-    div.stButton > button:hover { background-color: #0077b6 !important; border-color: #00b4d8 !important; color: #ffffff !important; }
-
-    /* 하단 채팅창 */
-    div[data-testid="stChatInput"] { background-color: transparent !important; }
-    div[data-testid="stChatInput"] > div { background-color: #0f1a2c !important; border: 1px solid #00b4d844 !important; }
-    div[data-testid="stChatInput"] textarea { background-color: transparent !important; color: #e2f1ff !important; }
-    div[data-testid="stChatInput"] button { background-color: transparent !important; color: #00b4d8 !important; }
-    
-    /* 말풍선 공통 및 인라인 배치 */
-    .chat-container { display: flex; flex-direction: column; gap: 40px; margin: 25px 0; width: 100%; }
-    .chat-row { display: flex; width: 100%; }
-    .user-row { justify-content: flex-end; }
-    .ai-row { justify-content: flex-start; }
-    .message-box { padding: 16px 24px; max-width: 78%; font-size: 15px; line-height: 1.6; word-break: break-word; white-space: pre-wrap; margin: 5px 0; }
-    
-    .user-msg { background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%); color: #ffffff !important; border-radius: 24px 24px 4px 24px; box-shadow: 0px 4px 15px rgba(0, 180, 216, 0.2); font-weight: 500; }
-    .user-msg * { color: #ffffff !important; }
-    .ai-msg { background-color: #0f1a2c; color: #e2f1ff !important; border-radius: 24px 24px 24px 4px; border: 1.5px solid #00b4d8; box-shadow: 0px 4px 20px rgba(0, 180, 216, 0.15); }
-    .ai-msg * { color: #e2f1ff !important; }
-    
-    h1, h2, h3, p, span, label, .stMarkdown, div[data-testid="stWidgetLabel"] p { color: #e2f1ff !important; }
-    .stCaption { color: #64748b !important; }
-</style>
-"""
-
-light_css = """
-<style>
-    .stApp { background-color: #ffffff !important; color: #1e293b; }
-    [data-testid="stSidebar"] { background-color: #f8fafc !important; border-right: 1px solid #e2e8f0 !important; }
-    
-    /* 입력창 및 셀렉트박스 */
-    div[data-testid="stTextInput"] input, div[data-testid="stSelectbox"] [data-baseweb="select"] {
-        background-color: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important;
-    }
-    div[data-baseweb="popover"], div[data-baseweb="menu"] { background-color: #ffffff !important; color: #1e293b !important; }
-    div[data-baseweb="popover"] li { background-color: transparent !important; color: #1e293b !important; }
-    div[data-baseweb="popover"] li:hover { background-color: #f1f5f9 !important; }
-    
-    /* 버튼 */
-    div.stButton > button { background-color: #ffffff !important; color: #0f172a !important; border: 1px solid #cbd5e1 !important; }
-    div.stButton > button:hover { background-color: #0077b6 !important; border-color: #0077b6 !important; color: #ffffff !important; }
-
-    /* 하단 채팅창 */
-    div[data-testid="stChatInput"] { background-color: transparent !important; }
-    div[data-testid="stChatInput"] > div { background-color: #ffffff !important; border: 1px solid #cbd5e1 !important; box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.05) !important; }
-    div[data-testid="stChatInput"] textarea { background-color: transparent !important; color: #1e293b !important; }
-    div[data-testid="stChatInput"] button { background-color: transparent !important; color: #0077b6 !important; }
-    
-    /* 말풍선 공통 및 인라인 배치 */
-    .chat-container { display: flex; flex-direction: column; gap: 35px; margin: 25px 0; width: 100%; }
-    .chat-row { display: flex; width: 100%; }
-    .user-row { justify-content: flex-end; }
-    .ai-row { justify-content: flex-start; }
-    .message-box { padding: 16px 24px; max-width: 78%; font-size: 15px; line-height: 1.6; word-break: break-word; white-space: pre-wrap; margin: 5px 0; }
-    
-    .user-msg { background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%); color: #ffffff !important; border-radius: 24px 24px 4px 24px; box-shadow: 0px 4px 12px rgba(0, 180, 216, 0.15); font-weight: 500; }
-    .user-msg * { color: #ffffff !important; }
-    .ai-msg { background-color: #f4f9fc; color: #1e293b !important; border-radius: 24px 24px 24px 4px; border: 1.5px solid #00b4d8; box-shadow: 0px 4px 15px rgba(0, 180, 216, 0.06); }
-    .ai-msg * { color: #1e293b !important; }
-    
-    h1, h2, h3, p, span, label, .stMarkdown, div[data-testid="stWidgetLabel"] p { color: #0f172a !important; }
-    .stCaption { color: #64748b !important; }
-</style>
-"""
-
-# 선택한 테마에 맞춰 실시간 CSS 주입
-if theme_choice == "🌙 다크 모드":
-    st.markdown(dark_css, unsafe_allow_html=True)
-else:
-    st.markdown(light_css, unsafe_allow_html=True)
+    else:
+        st.caption("로그인 후 서비스를 이용하실 수 있습니다.")
 
 
 # --- 6. 비로그인 화면 (로그인 / 회원가입) ---
