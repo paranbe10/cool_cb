@@ -1,21 +1,106 @@
 import streamlit as st
 import google.generativeai as genai
+import sqlite3
+import hashlib
 
-# 1. 페이지 설정 및 제목
+# 1. 페이지 설정 (초안 설정 유지)
 st.set_page_config(page_title="Self Thinking Chatbot v1", page_icon="❔", layout="centered")
 
-st.title("안녕하세요! 저는 Beta-T에요")
-st.caption("이 챗봇은 당신이 스스로 답을 찾을 수 있도록 도와줍니다.")
+# 카카오톡/DM 스타일 인터페이스 디자인을 위한 CSS 주입
+css_style = """
+<style>
+    .stApp {
+        background-color: #f5f5f5;
+    }
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 20px;
+        width: 100%;
+    }
+    .chat-row {
+        display: flex;
+        width: 100%;
+    }
+    .user-row {
+        justify-content: flex-end;
+    }
+    .ai-row {
+        justify-content: flex-start;
+    }
+    .message-box {
+        padding: 12px 16px;
+        border-radius: 16px;
+        max-width: 75%;
+        font-size: 15px;
+        line-height: 1.5;
+        box-shadow: 0px 1px 2px rgba(0,0,0,0.1);
+        word-break: break-word;
+    }
+    .user-msg {
+        background-color: #fee500;
+        color: #191919;
+        border-top-right-radius: 0px;
+    }
+    .ai-msg {
+        background-color: #ffffff;
+        color: #333333;
+        border-top-left-radius: 0px;
+        border: 1px solid #e2e2e2;
+    }
+</style>
+"""
+st.markdown(css_style, unsafe_allow_html=True)
 
-# 2. Gemini API 키 설정 (Streamlit Secrets 보안 기능 활용)
-# 테스트 시에는 'YOUR_API_KEY'에 직접 넣어도 되지만, 배포 시에는 Secrets 시스템을 씁니다.
+# 2. 데이터베이스 설정 (SQLite 계정 저장 기능)
+def init_db():
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            username TEXT PRIMARY KEY,
+            password TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+def make_hashes(password):
+    return hashlib.sha256(str.encode(password)).hexdigest()
+
+def login_user(username, password):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT password FROM users WHERE username = ?", (username,))
+    data = cursor.fetchone()
+    conn.close()
+    if data and data[0] == make_hashes(password):
+        return True
+    return False
+
+def add_user(username, password):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    try:
+        cursor.execute("INSERT INTO users(username, password) VALUES (?,?)", (username, make_hashes(password)))
+        conn.commit()
+        success = True
+    except sqlite3.IntegrityError:
+        success = False
+    conn.close()
+    return success
+
+# DB 파일 생성 및 초기화
+init_db()
+
+# 3. Gemini API 키 설정 (초안 분기 로직 100% 동일 유지)
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 else:
-    # 로컬 테스트용 (Secrets가 없을 때)
     genai.configure(api_key="AQ.Ab8RN6KC5DpBgtEw2bxuK0l0F5imUQtjfuwdFF-ga0S7_Ow1pQ") 
 
-# 3. 우리가 완성한 영어 프롬프트를 System Instruction에 주입
+# 4. 초안의 프롬프트 내용 (수정 없이 원본 그대로 유지)
 system_instruction = """
 # Role and Core Objective
 You are a strict Socratic guide and cognitive coach. Your primary objective is to lead the user to find their own answers through guided discovery. You must NEVER think, write, or make choices on behalf of the user. Your goal is to foster absolute intellectual independence.
@@ -38,37 +123,48 @@ You are a strict Socratic guide and cognitive coach. Your primary objective is t
 * Validating: Always acknowledge the user's feelings or struggles first before asking the next question.
 """
 
-# 4. 세션 상태(대화 기록) 초기화
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# 5. 로그인 및 세션 상태 관리 변수 초기화
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "username" not in st.session_state:
+    st.session_state.username = ""
 
-if "chat_session" not in st.session_state:
-    # 모델 설정 시 system_instruction을 주입합니다.
-    model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash", # 빠르고 가벼운 플래시 모델 추천
-        system_instruction=system_instruction
-    )
-    st.session_state.chat_session = model.start_chat(history=[])
+# --- 화면 분기: 1. 로그인이 안 된 상태 ---
+if not st.session_state.logged_in:
+    st.title("🔐 대화 공간 입장하기")
+    menu = ["로그인", "회원가입"]
+    choice = st.selectbox("원하는 작업을 선택하세요", menu)
 
-# 5. 기존 대화 내용 화면에 표시
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+    if choice == "로그인":
+        st.subheader("로그인")
+        username = st.text_input("아이디", key="login_user")
+        password = st.text_input("비밀번호", type="password", key="login_pass")
+        if st.button("로그인 하기"):
+            if login_user(username, password):
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                st.success(f"👋 {username}님 환영합니다!")
+                st.rerun()
+            else:
+                st.error("❌ 아이디 또는 비밀번호가 틀렸습니다.")
 
-# 6. 사용자 입력창 및 AI 답변 로직
-if user_input := st.chat_input("어떤 생각이나 고민을 나누고 싶으신가요?"):
-    # 사용자 메시지 표시 및 저장
-    st.chat_message("user").markdown(user_input)
-    st.session_state.messages.append({"role": "user", "content": user_input})
+    elif choice == "회원가입":
+        st.subheader("새로운 계정 만들기")
+        new_user = st.text_input("원하는 아이디", key="reg_user")
+        new_password = st.text_input("원하는 비밀번호", type="password", key="reg_pass")
+        if st.button("가입하기"):
+            if not new_user.strip() or not new_password.strip():
+                st.warning("아이디와 비밀번호를 모두 입력해주세요.")
+            else:
+                if add_user(new_user, new_password):
+                    st.success("🎉 회원가입 성공! 로그인을 진행해주세요.")
+                else:
+                    st.error("❌ 이미 존재하는 아이디입니다.")
 
-    # Gemini API 호출 및 답변 수집
-    try:
-        response = st.session_state.chat_session.send_message(user_input)
-        ai_response = response.text
-
-        # AI 메시지 표시 및 저장
-        with st.chat_message("assistant"):
-            st.markdown(ai_response)
-        st.session_state.messages.append({"role": "assistant", "content": ai_response})
-    except Exception as e:
-        st.error(f"오류가 발생했습니다: {e}")
+# --- 화면 분기: 2. 로그인에 성공한 상태 ---
+else:
+    # 기능 추가: 새 대화를 빠르게 열 수 있는 세션 초기화 함수 (초안의 gemini-2.5-flash 모델 적용)
+    def init_new_chat():
+        st.session_state.messages = []
+        model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash",
