@@ -247,3 +247,27 @@ if st.session_state.get("messages") and st.session_state.messages[-1]["role"] ==
             st.rerun()
         except Exception as e:
             st.error(f"! 오류가 발생했습니다: {e}")
+            
+# --- [부록] 관리자 전용 회원 열람 비밀 메뉴 ---
+st.markdown("---")
+with st.expander("🛠️ 시스템 관리자 전용 메뉴 (클릭)"):
+    admin_password = st.text_input("관리자 인증 암호를 입력하세요", type="password", key="admin_menu_pass")
+    
+    # 본인만 알 수 있는 마스터 비밀번호 설정 (예: admin1234)
+    if admin_password == "admin1234": 
+        st.success("인증 성공! 회원 목록을 불러옵니다.")
+        conn = sqlite3.connect("users.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT username, password FROM users")
+        rows = cursor.fetchall()
+        conn.close()
+        
+        # 표(Table) 형태로 깔끔하게 출력
+        import pandas as pd
+        if rows:
+            df = pd.DataFrame(rows, columns=["아이디 (Username)", "암호화된 비번 (Hash)"])
+            st.dataframe(df, use_container_width=True)
+        else:
+            st.info("아직 가입한 회원이 없습니다.")
+    elif admin_password:
+        st.error("X 관리자 암호가 일치하지 않습니다.")
