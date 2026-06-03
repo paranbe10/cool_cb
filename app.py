@@ -6,20 +6,26 @@ import hashlib
 # 1. 페이지 설정 및 제목 (물고기 및 바다 컨셉 아이콘 변경)
 st.set_page_config(page_title="Deep Sea Thinking Chatbot v1", page_icon="🐟", layout="centered")
 
-# CSS 스타일 주입 (과감한 네온 컬러 및 동글동글한 물방울 곡선 레이아웃)
+# CSS 스타일 주입 (어디 하나 튀지 않는 완벽한 심해 다크 네이비 테마)
 css_style = """
 <style>
-    /* 앱 전체 배경을 깊고 신비로운 심해 그라데이션으로 변경 */
+    /* 앱 전체 배경: 하단 입력창과 자연스럽게 매칭되는 고급스러운 심해 네이비 고정 */
     .stApp {
-        background: linear-gradient(180deg, #020914 0%, #2E75A4 100%);
+        background-color: #060d19 !important;
         color: #e0f2fe;
     }
     
-    /* 대화 컨테이너 간격 유지 및 스크롤 여백 확보 */
+    /* 사이드바 스타일: 배경 톤과 완벽히 호환되도록 일체형 다크 블루 적용 */
+    [data-testid="stSidebar"] {
+        background-color: #03070f !important;
+        border-right: 1px solid #00b4d822 !important;
+    }
+    
+    /* 대화 컨테이너 간격 및 스크롤 여백 */
     .chat-container {
         display: flex;
         flex-direction: column;
-        gap: 45px;
+        gap: 40px;
         margin-top: 25px;
         margin-bottom: 25px;
         width: 100%;
@@ -35,45 +41,39 @@ css_style = """
         justify-content: flex-start;
     }
     
-    /* 말풍선 기본 공통 스타일: 가독성을 위해 안쪽 여백과 줄간격을 대폭 넓힘 */
+    /* 말풍선 공통: 상하 여백을 16px로 널찍하게 늘려 가독성 극대화 */
     .message-box {
-        padding: 10px 24px; /* 좌우 여백을 넓혀 둥근 모양이 찌그러지지 않게 조절 */
+        padding: 16px 24px; 
         max-width: 78%;
         font-size: 15px;
-        line-height: 1.5; /* 글자 정렬이 붙어 보이지 않도록 줄간격 확장 */
+        line-height: 1.6;
         word-break: break-word;
         transition: all 0.3s ease;
-        margin-top: 10px;
-        margin-bottom: 10px;
+        margin-top: 5px;
+        margin-bottom: 5px;
     }
     
-    /* 사용자 말풍선: 화려하게 빛나는 심해 네온 아쿠아 그라데이션 + 극대화된 곡선 */
+    /* 사용자 말풍선: 전체 톤과 조화를 이루는 세련된 아쿠아 마린 그라데이션 */
     .user-msg {
-        background: linear-gradient(135deg, #00f2fe 0%, #0077b6 100%);
+        background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
         color: #ffffff;
-        border-radius: 28px 28px 4px 28px; /* 오른쪽 아래만 뾰족하게, 나머지는 완전한 곡선 */
-        box-shadow: 0px 8px 20px rgba(0, 242, 254, 0.35);
+        border-radius: 24px 24px 4px 24px; /* 유선형 조약돌 곡선 */
+        box-shadow: 0px 4px 15px rgba(0, 180, 216, 0.2);
         font-weight: 500;
     }
     
-    /* AI 말풍선: 심해어처럼 야광 빛을 뿜는 다크 마린 + 형광 블루 테두리 */
+    /* AI 말풍선: 배경색에 묻히지 않으면서 일체감을 주는 딥 블루 셸 + 아쿠아 라인 */
     .ai-msg {
-        background: linear-gradient(135deg, #0a1c30 0%, #122842 100%);
+        background-color: #0f1a2c;
         color: #e2f1ff;
-        border-radius: 28px 28px 28px 4px; /* 왼쪽 아래만 뾰족한 물방울 형태 */
-        border: 2px solid #00f2fe; /* 과감하고 선명한 네온 블루 테두리 */
-        box-shadow: 0px 8px 25px rgba(0, 242, 254, 0.25); /* 몽환적인 발광 효과 */
+        border-radius: 24px 24px 24px 4px; /* 둥근 물방울 곡선 */
+        border: 1.5px solid #00b4d8; /* 세련되고 과감한 테두리 포인트 */
+        box-shadow: 0px 4px 20px rgba(0, 180, 216, 0.15);
     }
     
-    /* 텍스트 가독성을 위해 기본 Streamlit 글자 색상 보정 */
+    /* 모든 텍스트 가독성을 맑고 투명한 아이스 블루 톤으로 일괄 보정 */
     h1, h2, h3, p, span, label, .stMarkdown {
-        color: #e0f2fe !important;
-    }
-    
-    /* 사이드바 스타일 바다 느낌으로 통일 */
-    [data-testid="stSidebar"] {
-        background-color: #010b17 !important;
-        border-right: 2px solid #0077b6;
+        color: #e2f1ff !important;
     }
 </style>
 """
