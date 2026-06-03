@@ -11,7 +11,7 @@ css_style = """
 <style>
     /* 앱 전체 배경을 깊고 신비로운 심해 그라데이션으로 변경 */
     .stApp {
-        background: linear-gradient(180deg, #020914 0%, #2E55A4 100%);
+        background: linear-gradient(180deg, #020914 0%, #2E75A4 100%);
         color: #e0f2fe;
     }
     
