@@ -106,8 +106,9 @@ auto_theme_css = """
         font-size: 10px !important;
         padding: 0px !important;
         min-height: 20px !important;
-        width: 100px !important;
+        width: auto !important;
         box-shadow: none !important;
+        margin: 100px 0;
     }
     div.admin-secret-btn > button:hover {
         color: #00b4d8 !important; /* 마우스를 올릴 때만 슬쩍 파란빛 유혹 */
