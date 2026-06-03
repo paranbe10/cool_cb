@@ -3,10 +3,10 @@ import google.generativeai as genai
 import sqlite3
 import hashlib
 
-# 1. 페이지 설정 (초안 설정 유지)
+# 1. 페이지 설정 및 제목 (초안 설정 100% 유지)
 st.set_page_config(page_title="Self Thinking Chatbot v1", page_icon="❔", layout="centered")
 
-# 카카오톡/DM 스타일 인터페이스 디자인을 위한 CSS 주입
+# CSS 스타일 주입
 css_style = """
 <style>
     .stApp {
@@ -53,7 +53,7 @@ css_style = """
 """
 st.markdown(css_style, unsafe_allow_html=True)
 
-# 2. 데이터베이스 설정 (SQLite 계정 저장 기능)
+# 2. 데이터베이스 설정 (SQLite)
 def init_db():
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
@@ -91,16 +91,15 @@ def add_user(username, password):
     conn.close()
     return success
 
-# DB 파일 생성 및 초기화
 init_db()
 
-# 3. Gemini API 키 설정 (초안 분기 로직 100% 동일 유지)
+# 3. Gemini API 키 설정 (초안 분기 로직 동일)
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 else:
     genai.configure(api_key="AQ.Ab8RN6KC5DpBgtEw2bxuK0l0F5imUQtjfuwdFF-ga0S7_Ow1pQ") 
 
-# 4. 초안의 프롬프트 내용 (수정 없이 원본 그대로 유지)
+# 4. 프롬프트 시스템 지침 (원본 유지)
 system_instruction = """
 # Role and Core Objective
 You are a strict Socratic guide and cognitive coach. Your primary objective is to lead the user to find their own answers through guided discovery. You must NEVER think, write, or make choices on behalf of the user. Your goal is to foster absolute intellectual independence.
@@ -123,13 +122,13 @@ You are a strict Socratic guide and cognitive coach. Your primary objective is t
 * Validating: Always acknowledge the user's feelings or struggles first before asking the next question.
 """
 
-# 5. 로그인 및 세션 상태 관리 변수 초기화
+# 5. 세션 상태 초기화
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "username" not in st.session_state:
     st.session_state.username = ""
 
-# --- 화면 분기: 1. 로그인이 안 된 상태 ---
+# --- 화면 분기 1: 비로그인 상태 ---
 if not st.session_state.logged_in:
     st.title("🔐 대화 공간 입장하기")
     menu = ["로그인", "회원가입"]
@@ -161,10 +160,6 @@ if not st.session_state.logged_in:
                 else:
                     st.error("❌ 이미 존재하는 아이디입니다.")
 
-# --- 화면 분기: 2. 로그인에 성공한 상태 ---
+# --- 화면 분기 2: 로그인 완료 상태 ---
 else:
-    # 기능 추가: 새 대화를 빠르게 열 수 있는 세션 초기화 함수 (초안의 gemini-2.5-flash 모델 적용)
-    def init_new_chat():
-        st.session_state.messages = []
-        model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
+    # 오류 방지를 위해 함수 내부의 모델 선언문 괄호를 한 줄로 완
