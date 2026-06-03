@@ -9,45 +9,45 @@ st.set_page_config(page_title="Self Thinking Chatbot v2", page_icon="❔", layou
 st.markdown("""
 <style>
     /* 배경 및 기본 폰트 설정 */
-    .stApp {
+    .stApp """
         background-color: #f5f5f5;
-    }
+    """
     /* 카카오톡/디엠 스타일 말풍선 디자인 */
-    .chat-container {
+    .chat-container """
         display: flex;
         flex-direction: column;
         gap: 10px;
         margin-bottom: 20px;
-    }
-    .message-box {
+    """
+    .message-box """
         padding: 10px 15px;
         border-radius: 15px;
         max-width: 75%;
         font-size: 15px;
         line-height: 1.5;
         box-shadow: 0px 1px 2px rgba(0,0,0,0.1);
-    }
+    """
     /* 사용자 메시지: 오른쪽 정렬, 노란빛 */
-    .user-row {
+    .user-row """
         display: flex;
         justify-content: flex-end;
-    }
-    .user-msg {
+    """
+    .user-msg """
         background-color: #fee500;
         color: #191919;
         border-top-right-radius: 0px;
-    }
+    """
     /* AI 메시지: 왼쪽 정렬, 흰색/회색 */
-    .ai-row {
+    .ai-row """
         display: flex;
         justify-content: flex-start;
-    }
-    .ai-msg {
+    """
+    .ai-msg """
         background-color: #ffffff;
         color: #333333;
         border-top-left-radius: 0px;
         border: 1px solid #e2e2e2;
-    }
+    """
 </style>
 """, unsafe_allowed_html=True)
 
