@@ -25,7 +25,7 @@ css_style = """
     .chat-container {
         display: flex;
         flex-direction: column;
-        gap: 40px;
+        gap: 20px;
         margin-top: 25px;
         margin-bottom: 25px;
         width: 100%;
