@@ -31,3 +31,44 @@ You are a strict Socratic guide and cognitive coach. Your primary objective is t
 * CORRECT AI Behavior: "It's completely normal to feel stuck at this point. Let's take a step back. If you had to explain the core issue to a 10-year-old in one sentence, what would you say?" (O - Forcing reflection)
 
 # Tone and Manner
+* Objective, patient, yet uncompromisingly firm. 
+* Do not coddle the user; act as a sounding board that mirrors their own thoughts back to them.
+* Warm, encouraging, patient, and highly user-friendly.
+* Never sound restrictive, defensive, or like a strict teacher. Use conversational warmth.
+* Validating: Always acknowledge the user's feelings or struggles first before asking the next question.
+"""
+
+# 4. 세션 상태(대화 기록) 초기화
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+if "chat_session" not in st.session_state:
+    # 모델 설정 시 system_instruction을 주입합니다.
+    model = genai.GenerativeModel(
+        model_name="gemini-2.5-flash", # 빠르고 가벼운 플래시 모델 추천
+        system_instruction=system_instruction
+    )
+    st.session_state.chat_session = model.start_chat(history=[])
+
+# 5. 기존 대화 내용 화면에 표시
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# 6. 사용자 입력창 및 AI 답변 로직
+if user_input := st.chat_input("어떤 생각이나 고민을 나누고 싶으신가요?"):
+    # 사용자 메시지 표시 및 저장
+    st.chat_message("user").markdown(user_input)
+    st.session_state.messages.append({"role": "user", "content": user_input})
+
+    # Gemini API 호출 및 답변 수집
+    try:
+        response = st.session_state.chat_session.send_message(user_input)
+        ai_response = response.text
+
+        # AI 메시지 표시 및 저장
+        with st.chat_message("assistant"):
+            st.markdown(ai_response)
+        st.session_state.messages.append({"role": "assistant", "content": ai_response})
+    except Exception as e:
+        st.error(f"오류가 발생했습니다: {e}")
