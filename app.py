@@ -106,7 +106,7 @@ auto_theme_css = """
         font-size: 10px !important;
         padding: 0px !important;
         min-height: 20px !important;
-        width: auto !important;
+        width: 100px !important;
         box-shadow: none !important;
     }
     div.admin-secret-btn > button:hover {
