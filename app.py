@@ -149,5 +149,65 @@ if not st.session_state.logged_in:
 
     elif choice == "회원가입":
         st.subheader("새로운 계정 만들기")
-        new_user = st.text_input("원하는 아이디",key="reg_user")
-        new_password = st.text_input("원하는 비밀
+        new_user = st.text_input("원하는 아이디", key="reg_user")
+        new_password = st.text_input("원하는 비밀번호", type="password", key="reg_pass")
+        if st.button("가입하기"):
+            if not new_user.strip() or not new_password.strip():
+                st.warning("아이디와 비밀번호를 모두 입력해주세요.")
+            else:
+                if add_user(new_user, new_password):
+                    st.success("🎉 회원가입 성공! 로그인을 진행해주세요.")
+                else:
+                    st.error("❌ 이미 존재하는 아이디입니다.")
+    
+    st.stop()  # 로그인 안 됬으면 여기서 코드 실행 강제 종료 (하단 코드로 안 넘어감)
+
+
+# --- [구조 변경] 2. 로그인 완료된 상태 (else문을 없애고 맨 앞으로 정렬) ---
+def init_new_chat():
+    st.session_state.messages = []
+    model = genai.GenerativeModel(model_name="gemini-2.5-flash", system_instruction=system_instruction)
+    st.session_state.chat_session = model.start_chat(history=[])
+
+if "messages" not in st.session_state or "chat_session" not in st.session_state:
+    init_new_chat()
+
+with st.sidebar:
+    st.subheader(f"👤 {st.session_state.username}님")
+    if st.button("🔄 새 대화 시작하기", use_container_width=True):
+        init_new_chat()
+        st.rerun()
+    st.markdown("---")
+    if st.button("🚪 로그아웃", use_container_width=True):
+        st.session_state.logged_in = False
+        st.session_state.username = ""
+        st.rerun()
+
+# 초안 메인 타이틀 노출
+st.title("안녕하세요! 저는 Beta-T에요")
+st.caption("이 챗봇은 당신이 스스로 답을 찾을 수 있도록 도와줍니다.")
+
+# 카카오톡 정렬 레이아웃 출력
+st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+for message in st.session_state.messages:
+    if message["role"] == "user":
+        st.markdown(f'<div class="chat-row user-row"><div class="message-box user-msg">{message["content"]}</div></div>', unsafe_allow_html=True)
+    else:
+        st.markdown(f'<div class="chat-row ai-row"><div class="message-box ai-msg">{message["content"]}</div></div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+if user_input := st.chat_input("어떤 생각이나 고민을 나누고 싶으신가요?"):
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    st.rerun()
+
+# 비동기 백그라운드 AI 응답 연산
+if st.session_state.get("messages") and st.session_state.messages[-1]["role"] == "user":
+    user_input = st.session_state.messages[-1]["content"]
+    with st.spinner("생각을 가다듬는 중..."):
+        try:
+            response = st.session_state.chat_session.send_message(user_input)
+            ai_response = response.text
+            st.session_state.messages.append({"role": "assistant", "content": ai_response})
+            st.rerun()
+        except Exception as e:
+            st.error(f"오류가 발생했습니다: {e}")
