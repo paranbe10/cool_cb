@@ -105,7 +105,7 @@ else:
     st.error("⚠️ Streamlit Settings -> Secrets에 GOOGLE_API_KEY를 설정해주세요.")
     st.stop()
 
-# 4. 프롬프트 (오류 방지를 위해 좌우 공백 없이 완전히 정렬)
+# 4. 프롬프트 (수정 없이 100% 동일하게 유지)
 system_instruction = """# Role and Core Objective
 You are a strict Socratic guide and cognitive coach. Your primary objective is to lead the user to find their own answers through guided discovery. You must NEVER think, write, or make choices on behalf of the user. Your goal is to foster absolute intellectual independence.
 
@@ -160,4 +160,39 @@ if not st.session_state.logged_in:
                 st.warning("아이디와 비밀번호를 모두 입력해주세요.")
             else:
                 if add_user(new_user, new_password):
-                    st.success("🎉 회원가입 성공! 로그인을 진행해주세요
+                    st.success("🎉 회원가입 성공! 로그인을 진행해주세요.")
+                else:
+                    st.error("❌ 이미 존재하는 아이디입니다.")
+
+# --- 메인 챗봇 화면 (로그인 성공 시) ---
+else:
+    def init_new_chat():
+        st.session_state.messages = []
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            system_instruction=system_instruction
+        )
+        st.session_state.chat_session = model.start_chat(history=[])
+
+    if "messages" not in st.session_state or "chat_session" not in st.session_state:
+        init_new_chat()
+
+    with st.sidebar:
+        st.subheader(f"👤 {st.session_state.username}님")
+        if st.button("🔄 새 대화 시작하기", use_container_width=True):
+            init_new_chat()
+            st.rerun()
+        
+        st.markdown("---")
+        if st.button("🚪 로그아웃", use_container_width=True):
+            st.session_state.logged_in = False
+            st.session_state.username = ""
+            st.rerun()
+
+    st.title("💡 생각을 깨우는 다정한 대화 공간")
+    st.caption(f"현재 접속 계정: {st.session_state.username}")
+
+    st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+    for message in st.session_state.messages:
+        if message["role"] == "user":
+            st.markdown(f'<div class="user-row"><div class="message-box user-msg">{message["content"]}</div>
