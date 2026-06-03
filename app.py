@@ -2,10 +2,10 @@ import streamlit as st
 import google.generativeai as genai
 
 # 1. 페이지 설정 및 제목
-st.set_page_config(page_title="생각을 깨우는 챗봇", page_icon="💡", layout="centered")
+st.set_page_config(page_title="Self Thinking Chatbot v1", page_icon="❔", layout="centered")
 
-st.title("💡 생각을 깨우는 다정한 대화 공간")
-st.caption("이 챗봇은 정답을 바로 주지 않고, 당신이 스스로 답을 찾을 수 있도록 다정하게 도와줍니다.")
+st.title("안녕하세요! 저는 Beta-T에요")
+st.caption("이 챗봇은 당신이 스스로 답을 찾을 수 있도록 도와줍니다.")
 
 # 2. Gemini API 키 설정 (Streamlit Secrets 보안 기능 활용)
 # 테스트 시에는 'YOUR_API_KEY'에 직접 넣어도 되지만, 배포 시에는 Secrets 시스템을 씁니다.
