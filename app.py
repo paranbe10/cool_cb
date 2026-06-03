@@ -2,15 +2,18 @@ import streamlit as st
 import google.generativeai as genai
 import sqlite3
 import hashlib
+import pandas as pd
 
 # 1. 페이지 설정 및 제목
-st.set_page_config(page_title="Beta-T", page_icon="🐟", layout="centered")
+st.set_page_config(page_title="Deep Sea Thinking Chatbot v1", page_icon="🐟", layout="centered")
 
 # 2. 세션 상태 초기화 및 새로고침 자동 로그인 감지
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "username" not in st.session_state:
     st.session_state.username = ""
+if "show_admin" not in st.session_state:
+    st.session_state.show_admin = False
 
 # URL 쿼리 파라미터를 확인하여 새로고침 시 로그인 상태 자동 복구
 if not st.session_state.logged_in and "user" in st.query_params and "token" in st.query_params:
@@ -71,12 +74,6 @@ else:
 system_instruction = """
 # Role and Core Objective
 You are a strict Socratic guide and cognitive coach. Your primary objective is to lead the user to find their own answers through guided discovery. You must NEVER think, write, or make choices on behalf of the user. Your goal is to foster absolute intellectual independence.
-
-# Strict Rules for Interaction
-1. NO DIRECT ANSWERS OR SOLUTIONS: Never write essays, reflections, reports, or opinions for the user. Absolutely refuse to do the intellectual heavy lifting.
-2. NO "MOTHERING" OR PROVIDING OPTIONS: When the user is stuck, frustrated, or asks "What should I do?", DO NOT provide a list of options, choices, or potential answers. Providing choices creates dependency. Instead, force the user to generate their own options by asking them to look at the problem from a different angle or break it down into smaller parts.
-3. STEP-BY-STEP GUIDANCE: Guide the user through the thinking process one tiny step at a time. Ask only ONE open-ended question per turn. Never overwhelm them.
-4. IMMEDIATE FACTUAL INFORMATION: Provide objective facts, raw data, or definitions immediately if requested. However, the moment the task shifts to analyzing, reflecting, or making a decision based on that data, you must strictly revert to asking questions.
 """
 
 def init_new_chat():
@@ -85,7 +82,7 @@ def init_new_chat():
     st.session_state.chat_session = model.start_chat(history=[])
 
 
-# 4. 브라우저/시스템 테마를 알아서 감지하는 지능형 통합 CSS 주입
+# 4. 브라우저/시스템 테마를 알아서 감지하는 지능형 통합 CSS 주입 + 초소형 관리자 버튼 스타일
 auto_theme_css = """
 <style>
     /* 📌 [공통 레이아웃 구조] */
@@ -98,11 +95,10 @@ auto_theme_css = """
     div[data-testid="stChatInput"] textarea { background-color: transparent !important; }
     div[data-testid="stChatInput"] button { background-color: transparent !important; }
     
-    /* 사용자 말풍선은 모드 공통으로 청량한 블루 고정 (시인성 최적화) */
     .user-msg { background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%); color: #ffffff !important; border-radius: 24px 24px 4px 24px; box-shadow: 0px 4px 12px rgba(0, 180, 216, 0.15); font-weight: 500; }
     .user-msg * { color: #ffffff !important; }
 
-/* 🚨 [핵심 수정] 왼쪽 하단 관리자 비밀 진입 버튼을 ㅈㄴ 작게 만드는 CSS 테러 */
+    /* 🚨 [핵심 수정] 왼쪽 하단 관리자 비밀 진입 버튼을 ㅈㄴ 작게 만드는 CSS 테러 */
     div.admin-secret-btn > button {
         background-color: transparent !important;
         border: none !important;
@@ -145,7 +141,6 @@ auto_theme_css = """
         .stCaption { color: #64748b !important; }
     }
 
-
     /* ☀️ [2] 사용자가 라이트 모드일 때 브라우저가 알아서 켜는 스타일 */
     @media (prefers-color-scheme: light) {
         .stApp { background-color: #ffffff !important; color: #1e293b; }
@@ -177,7 +172,7 @@ auto_theme_css = """
 st.markdown(auto_theme_css, unsafe_allow_html=True)
 
 
-# 5. 깔끔해진 사이드바 (로그인 정보 및 회원 기능만 포함)
+# 5. 왼쪽 사이드바 구성 (상단: 회원 정보 / 맨 하단: ㅈㄴ 작은 비밀 버튼)
 with st.sidebar:
     if st.session_state.logged_in:
         st.subheader(f"🐟 {st.session_state.username} 탐험가")
@@ -192,7 +187,8 @@ with st.sidebar:
             st.rerun()
     else:
         st.caption("로그인 후 서비스를 이용하실 수 있습니다.")
-# 🤫 [비밀 공간] 사이드바 본문을 띄우기 위한 빈 여백 확보 후 구석에 배치
+    
+    # 🤫 [비밀 공간] 사이드바 본문을 띄우기 위한 빈 여백 확보 후 구석에 배치
     st.write("")
     st.write("")
     
@@ -231,7 +227,8 @@ if st.session_state.show_admin:
         st.error("X 마스터 비밀번호가 틀렸습니다.")
     st.markdown("---")
 
-# --- 6. 비로그인 화면 (로그인 / 회원가입) ---
+
+# --- 7. 비로그인 화면 (로그인 / 회원가입) ---
 if not st.session_state.logged_in:
     st.title("로그인 페이지")
     menu = ["로그인", "회원가입"]
@@ -250,7 +247,7 @@ if not st.session_state.logged_in:
                 st.success(f"{username}님 환영합니다!")
                 st.rerun()
             else:
-                st.error("(X) 아이디 또는 비밀번호가 틀렸습니다.")
+                st.error("X 아이디 또는 비밀번호가 틀렸습니다.")
 
     elif choice == "회원가입":
         st.subheader("새로운 계정 만들기")
@@ -263,10 +260,11 @@ if not st.session_state.logged_in:
                 if add_user(new_user, new_password):
                     st.success("회원가입 성공! 로그인을 진행해주세요.")
                 else:
-                    st.error("*(X) 이미 존재하는 아이디입니다.")
+                    st.error("X 이미 존재하는 아이디입니다.")
     st.stop()
-    
-# --- 7. 메인 채팅 화면 (로그인 완료 상태) ---
+
+
+# --- 8. 메인 채팅 화면 (로그인 완료 상태) ---
 if "messages" not in st.session_state or "chat_session" not in st.session_state:
     init_new_chat()
 
@@ -281,7 +279,6 @@ for message in st.session_state.messages:
     else:
         st.markdown(f'<div class="chat-row ai-row"><div class="message-box ai-msg">{message["content"]}</div></div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
-
 
 # 사용자 입력 처리
 if user_input := st.chat_input("도움이 필요하신가요?"):
@@ -298,5 +295,4 @@ if st.session_state.get("messages") and st.session_state.messages[-1]["role"] ==
             st.session_state.messages.append({"role": "assistant", "content": ai_response})
             st.rerun()
         except Exception as e:
-            st.error(f"! 오류가 발생했습니다: {e}")
-            
+            st.error(f"오류가 발생했습니다: {e}")
