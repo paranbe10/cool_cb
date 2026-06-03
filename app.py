@@ -3,53 +3,54 @@ import google.generativeai as genai
 import sqlite3
 import hashlib
 
-# 1. 페이지 설정 및 카카오톡 스타일 UI 디자인 (CSS 주입)
-st.set_page_config(page_title="Self Thinking Chatbot v2", page_icon="❔", layout="centered")
+# 1. 페이지 설정 및 제목
+st.set_page_config(page_title="생각을 깨우는 챗봇", page_icon="💡", layout="centered")
 
-st.markdown("""
+# CSS 스타일을 파이썬 멀티라인 문자열 충돌이 안 나도록 안전하게 분리하여 주입
+css_style = """
 <style>
-    /* 배경 및 기본 폰트 설정 */
-    .stApp """
+    .stApp {
         background-color: #f5f5f5;
-    """
-    /* 카카오톡/디엠 스타일 말풍선 디자인 */
-    .chat-container """
+    }
+    .chat-container {
         display: flex;
         flex-direction: column;
         gap: 10px;
         margin-bottom: 20px;
-    """
-    .message-box """
+    }
+    .message-box {
         padding: 10px 15px;
         border-radius: 15px;
         max-width: 75%;
         font-size: 15px;
         line-height: 1.5;
         box-shadow: 0px 1px 2px rgba(0,0,0,0.1);
-    """
-    /* 사용자 메시지: 오른쪽 정렬, 노란빛 */
-    .user-row """
+    }
+    .user-row {
         display: flex;
         justify-content: flex-end;
-    """
-    .user-msg """
+    }
+    .user-msg {
         background-color: #fee500;
         color: #191919;
         border-top-right-radius: 0px;
-    """
-    /* AI 메시지: 왼쪽 정렬, 흰색/회색 */
-    .ai-row """
+    }
+    .ai-row {
         display: flex;
         justify-content: flex-start;
-    """
-    .ai-msg """
+    }
+    .ai-msg {
         background-color: #ffffff;
         color: #333333;
         border-top-left-radius: 0px;
         border: 1px solid #e2e2e2;
-    """
+    }
 </style>
-""", unsafe_allowed_html=True)
+"""
+st.markdown(css_style, unsafe_allowed_html=True)
+
+st.title("💡 생각을 깨우는 다정한 대화 공간")
+st.caption("이 챗봇은 정답을 바로 주지 않고, 당신이 스스로 답을 찾을 수 있도록 다정하게 도와줍니다.")
 
 # 2. 데이터베이스 설정 (SQLite)
 def init_db():
@@ -104,7 +105,7 @@ else:
     st.error("⚠️ Streamlit Settings -> Secrets에 GOOGLE_API_KEY를 설정해주세요.")
     st.stop()
 
-# 4. 프롬프트 (요청대로 절대 수정하지 않고 그대로 유지)
+# 4. 프롬프트 (절대 수정 없이 그대로 유지)
 system_instruction = """
 # Role and Core Objective
 You are a strict Socratic guide and cognitive coach. Your primary objective is to lead the user to find their own answers through guided discovery. You must NEVER think, write, or make choices on behalf of the user. Your goal is to foster absolute intellectual independence.
@@ -167,7 +168,6 @@ if not st.session_state.logged_in:
 
 # --- 메인 챗봇 화면 (로그인 성공 시) ---
 else:
-    # 대화 세션 관련 함수 정의
     def init_new_chat():
         st.session_state.messages = []
         model = genai.GenerativeModel(
@@ -176,14 +176,11 @@ else:
         )
         st.session_state.chat_session = model.start_chat(history=[])
 
-    # 초기화 안 되어 있으면 대화 생성
     if "messages" not in st.session_state or "chat_session" not in st.session_state:
         init_new_chat()
 
-    # 사이드바 구성 (새 대화 열기 및 로그아웃)
     with st.sidebar:
         st.subheader(f"👤 {st.session_state.username}님")
-        # 기능 추가: 새 대화 빠르게 열기 버튼
         if st.button("🔄 새 대화 시작하기", use_container_width=True):
             init_new_chat()
             st.rerun()
@@ -194,11 +191,9 @@ else:
             st.session_state.username = ""
             st.rerun()
 
-    # 메인 채팅 헤더
     st.title("💡 생각을 깨우는 다정한 대화 공간")
     st.caption(f"현재 접속 계정: {st.session_state.username}")
 
-    # 카카오톡/디엠 스타일 대화창 렌더링
     st.markdown('<div class="chat-container">', unsafe_allowed_html=True)
     for message in st.session_state.messages:
         if message["role"] == "user":
@@ -207,13 +202,10 @@ else:
             st.markdown(f'<div class="ai-row"><div class="message-box ai-msg">{message["content"]}</div></div>', unsafe_allowed_html=True)
     st.markdown('</div>', unsafe_allowed_html=True)
 
-    # 사용자 입력창 및 AI 답변 로직
     if user_input := st.chat_input("어떤 생각이나 고민을 나누고 싶으신가요?"):
-        # 내 화면에 유저 메시지 즉시 렌더링 후 세션 저장
         st.session_state.messages.append({"role": "user", "content": user_input})
-        st.rerun()  # 화면을 갱신해서 말풍선 위치 조정
+        st.rerun()
 
-# AI 답변 생성 로직 (Rerun 후 유저 메시지가 최하단에 배치된 뒤 실행됨)
 if st.session_state.get("logged_in") and st.session_state.get("messages") and st.session_state.messages[-1]["role"] == "user":
     user_input = st.session_state.messages[-1]["content"]
     with st.spinner("생각을 가다듬는 중..."):
@@ -225,7 +217,6 @@ if st.session_state.get("logged_in") and st.session_state.get("messages") and st
         except Exception as e:
             st.error(f"오류가 발생했습니다: {e}")
 
-# 피드백 수집 링크
 if st.session_state.get("logged_in"):
     st.markdown("---")
     st.markdown(
