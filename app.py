@@ -6,80 +6,81 @@ import hashlib
 # 1. 페이지 설정 및 제목 (물고기 및 바다 컨셉 아이콘 변경)
 st.set_page_config(page_title="Deep Sea Thinking Chatbot v1", page_icon="🐟", layout="centered")
 
-# CSS 스타일 주입 (하단 입력창 라이트 모드 버그까지 완전히 박멸한 버전)
+# CSS 스타일 주입 (어디 하나 튀지 않는 청량하고 깔끔한 라이트 마린 테마)
 css_style = """
 <style>
-    /* 앱 전체 배경: 어떤 모드에서도 고급스러운 심해 네이비 고정 */
+    /* 앱 전체 배경: 화사하고 깨끗한 화이트/아이스블루 고정 */
     .stApp {
-        background-color: #060d19 !important;
-        color: #e0f2fe;
+        background-color: #ffffff !important;
+        color: #1e293b;
     }
     
-    /* 사이드바 스타일: 배경 톤과 완벽히 호환되도록 일체형 다크 블루 적용 */
+    /* 사이드바 스타일: 메인 화면과 자연스럽게 대비되는 소프트 그레이 블루 */
     [data-testid="stSidebar"] {
-        background-color: #03070f !important;
-        border-right: 1px solid #00b4d822 !important;
+        background-color: #f8fafc !important;
+        border-right: 1px solid #e2e8f0 !important;
     }
     
-    /* [라이트 모드 완벽 방어] 입력창, 셀렉트박스, 버튼 다크 스타일 강제 고정 */
+    /* [라이트 모드 강제 고정] 입력창, 셀렉트박스 스타일 선명하게 통일 */
     div[data-testid="stTextInput"] input {
-        background-color: #0f1a2c !important;
-        color: #e2f1ff !important;
-        border: 1px solid #00b4d844 !important;
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #cbd5e1 !important;
     }
     div[data-testid="stSelectbox"] [data-baseweb="select"] {
-        background-color: #0f1a2c !important;
-        color: #e2f1ff !important;
-        border: 1px solid #00b4d844 !important;
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        border: 1px solid #cbd5e1 !important;
     }
-    /* 셀렉트박스 클릭 시 나오는 드롭다운 메뉴 팝업 방어 */
+    /* 셀렉트박스 드롭다운 팝업 매칭 */
     div[data-baseweb="popover"], div[data-baseweb="menu"] {
-        background-color: #0f1a2c !important;
-        color: #e2f1ff !important;
+        background-color: #ffffff !important;
+        color: #1e293b !important;
     }
     div[data-baseweb="popover"] li {
         background-color: transparent !important;
-        color: #e2f1ff !important;
+        color: #1e293b !important;
     }
     div[data-baseweb="popover"] li:hover {
-        background-color: #0077b6 !important;
+        background-color: #f1f5f9 !important;
     }
     
-    /* 일반 버튼 스타일 강제 고정 및 호버 효과 */
+    /* 버튼 스타일: 깔끔한 미색 바탕과 블루 호버 효과 */
     div.stButton > button {
-        background-color: #0f1a2c !important;
-        color: #e2f1ff !important;
-        border: 1px solid #00b4d866 !important;
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
         transition: all 0.2s ease;
     }
     div.stButton > button:hover {
         background-color: #0077b6 !important;
-        border-color: #00b4d8 !important;
+        border-color: #0077b6 !important;
         color: #ffffff !important;
     }
 
-    /* 🚨 [핵심 추가] 하단 채팅 입력창(st.chat_input) 라이트모드 둥둥 뜨는 현상 방어 */
+    /* 하단 채팅 입력창(st.chat_input) 배경 겉도는 현상 완벽 방어 */
     div[data-testid="stChatInput"] {
         background-color: transparent !important;
     }
     div[data-testid="stChatInput"] > div {
-        background-color: #0f1a2c !important; /* 밝은 회색을 딥 네이비로 강제 변경 */
-        border: 1px solid #00b4d844 !important; /* 세련된 푸른빛 테두리 */
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.05) !important;
     }
     div[data-testid="stChatInput"] textarea {
         background-color: transparent !important;
-        color: #e2f1ff !important; /* 글자색을 밝은 아이스 블루로 고정 */
+        color: #1e293b !important;
     }
     div[data-testid="stChatInput"] button {
         background-color: transparent !important;
-        color: #00b4d8 !important; /* 전송 아이콘 색상 변경 */
+        color: #0077b6 !important;
     }
     
     /* 대화 컨테이너 간격 및 스크롤 여백 */
     .chat-container {
         display: flex;
         flex-direction: column;
-        gap: 40px;
+        gap: 35px;
         margin-top: 25px;
         margin-bottom: 25px;
         width: 100%;
@@ -95,40 +96,50 @@ css_style = """
         justify-content: flex-start;
     }
     
-    /* 말풍선 공통: 상하 여백 늘림 및 줄바꿈 코드 보존 */
+    /* 말풍선 공통: 늘어난 상하 여백 및 줄바꿈 코드 완벽 보존 */
     .message-box {
         padding: 16px 24px; 
         max-width: 78%;
         font-size: 15px;
         line-height: 1.6;
         word-break: break-word;
-        white-space: pre-wrap; /* 줄바꿈 기능 유지 */
+        white-space: pre-wrap; /* 줄바꿈 유지 */
         transition: all 0.3s ease;
         margin-top: 5px;
         margin-bottom: 5px;
     }
     
-    /* 사용자 말풍선 */
+    /* 사용자 말풍선: 청량하고 시원한 맑은 바다 느낌의 블루 그라데이션 */
     .user-msg {
         background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
-        color: #ffffff;
+        color: #ffffff !important;
         border-radius: 24px 24px 4px 24px;
-        box-shadow: 0px 4px 15px rgba(0, 180, 216, 0.2);
+        box-shadow: 0px 4px 12px rgba(0, 180, 216, 0.15);
         font-weight: 500;
     }
-    
-    /* AI 말풍선 */
-    .ai-msg {
-        background-color: #0f1a2c;
-        color: #e2f1ff;
-        border-radius: 24px 24px 24px 4px;
-        border: 1.5px solid #00b4d8;
-        box-shadow: 0px 4px 20px rgba(0, 180, 216, 0.15);
+    .user-msg * {
+        color: #ffffff !important;
     }
     
-    /* 모든 텍스트 컬러 보정 */
+    /* AI 말풍선: 화사한 소프트 마린 에메랄드 셸 + 딥 아쿠아 테두리 */
+    .ai-msg {
+        background-color: #f4f9fc;
+        color: #1e293b !important;
+        border-radius: 24px 24px 24px 4px;
+        border: 1.5px solid #00b4d8;
+        box-shadow: 0px 4px 15px rgba(0, 180, 216, 0.06);
+    }
+    .ai-msg * {
+        color: #1e293b !important;
+    }
+    
+    /* 전체 텍스트 가독성을 위한 메인 가독성 컬러 보정 (딥 챠콜) */
     h1, h2, h3, p, span, label, .stMarkdown, div[data-testid="stWidgetLabel"] p {
-        color: #e2f1ff !important;
+        color: #0f172a !important;
+    }
+    /* 서브 캡션 텍스트 색상 조절 */
+    .stCaption {
+        color: #64748b !important;
     }
 </style>
 """
