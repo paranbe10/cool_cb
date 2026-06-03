@@ -16,7 +16,7 @@ css_style = """
         display: flex;
         flex-direction: column;
         gap: 50px;
-        margin-bottom: 1000px;
+        margin-bottom: 20px;
         width: 100%;
     }
     .chat-row {
