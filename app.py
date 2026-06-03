@@ -43,7 +43,8 @@ css_style = """
         line-height: 1.5; /* 글자 정렬이 붙어 보이지 않도록 줄간격 확장 */
         word-break: break-word;
         transition: all 0.3s ease;
-        gap: 15px;
+        margin-top: 25px;
+        margin-bottom: 25px;
     }
     
     /* 사용자 말풍선: 화려하게 빛나는 심해 네온 아쿠아 그라데이션 + 극대화된 곡선 */
