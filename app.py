@@ -6,7 +6,7 @@ import hashlib
 # 1. 페이지 설정 및 제목 (물고기 및 바다 컨셉 아이콘 변경)
 st.set_page_config(page_title="Deep Sea Thinking Chatbot v1", page_icon="🐟", layout="centered")
 
-# CSS 스타일 주입 (라이트 모드에서도 다크 테마를 강제 고정하는 완벽 방어형 CSS)
+# CSS 스타일 주입 (하단 입력창 라이트 모드 버그까지 완전히 박멸한 버전)
 css_style = """
 <style>
     /* 앱 전체 배경: 어떤 모드에서도 고급스러운 심해 네이비 고정 */
@@ -21,7 +21,7 @@ css_style = """
         border-right: 1px solid #00b4d822 !important;
     }
     
-    /* 🚨 [라이트 모드 완벽 방어] 입력창, 셀렉트박스, 버튼 다크 스타일 강제 고정 */
+    /* [라이트 모드 완벽 방어] 입력창, 셀렉트박스, 버튼 다크 스타일 강제 고정 */
     div[data-testid="stTextInput"] input {
         background-color: #0f1a2c !important;
         color: #e2f1ff !important;
@@ -56,6 +56,23 @@ css_style = """
         background-color: #0077b6 !important;
         border-color: #00b4d8 !important;
         color: #ffffff !important;
+    }
+
+    /* 🚨 [핵심 추가] 하단 채팅 입력창(st.chat_input) 라이트모드 둥둥 뜨는 현상 방어 */
+    div[data-testid="stChatInput"] {
+        background-color: transparent !important;
+    }
+    div[data-testid="stChatInput"] > div {
+        background-color: #0f1a2c !important; /* 밝은 회색을 딥 네이비로 강제 변경 */
+        border: 1px solid #00b4d844 !important; /* 세련된 푸른빛 테두리 */
+    }
+    div[data-testid="stChatInput"] textarea {
+        background-color: transparent !important;
+        color: #e2f1ff !important; /* 글자색을 밝은 아이스 블루로 고정 */
+    }
+    div[data-testid="stChatInput"] button {
+        background-color: transparent !important;
+        color: #00b4d8 !important; /* 전송 아이콘 색상 변경 */
     }
     
     /* 대화 컨테이너 간격 및 스크롤 여백 */
