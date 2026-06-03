@@ -213,7 +213,7 @@ if "messages" not in st.session_state or "chat_session" not in st.session_state:
     init_new_chat()
 
 with st.sidebar:
-    st.subheader(f"🐟 {st.session_state.username}님")
+    st.subheader(f"🐟 {st.session_state.username} 님")
     if st.button("새 대화 시작하기", use_container_width=True):
         init_new_chat()
         st.rerun()
@@ -225,7 +225,7 @@ with st.sidebar:
         st.rerun()
 
 # 바다 컨셉 메인 타이틀 노출
-st.title("🐳 안녕하세요! 저는 Beta-T에요")
+st.title("🐳 안녕하세요 {st.session_state.username} 님! 저는 Beta-T에요")
 st.caption("이 챗봇은 당신이 스스로 답을 찾을 수 있도록 도와줍니다.")
 
 # 바다 정렬 레이아웃 출력
