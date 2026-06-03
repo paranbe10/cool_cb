@@ -108,7 +108,6 @@ auto_theme_css = """
         min-height: 20px !important;
         width: auto !important;
         box-shadow: none !important;
-        margin: 100px 0;
     }
     div.admin-secret-btn > button:hover {
         color: #00b4d8 !important; /* 마우스를 올릴 때만 슬쩍 파란빛 유혹 */
@@ -190,8 +189,8 @@ with st.sidebar:
         st.caption("로그인 후 서비스를 이용하실 수 있습니다.")
     
     # 🤫 [비밀 공간] 사이드바 본문을 띄우기 위한 빈 여백 확보 후 구석에 배치
-    st.write("")
-    st.write("")
+    st.write("/*")
+    st.write("/*")
     
     # 클래스 주입으로 크기와 투명도를 극대화한 ⚙️ 버튼
     st.markdown('<div class="admin-secret-btn">', unsafe_allow_html=True)
