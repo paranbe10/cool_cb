@@ -165,12 +165,12 @@ if not st.session_state.logged_in and "user" in st.query_params and "token" in s
 
 # --- 1. 비로그인 상태면 여기서 화면을 그리고 무조건 멈춤 ---
 if not st.session_state.logged_in:
-    st.title("🔐 바다 대화 공간 입장하기")
+    st.title("로그인 페이지")
     menu = ["로그인", "회원가입"]
     choice = st.selectbox("원하는 작업을 선택하세요", menu)
 
     if choice == "로그인":
-        st.subheader("심해 잠수 로그인")
+        st.subheader("로그인")
         username = st.text_input("아이디", key="login_user")
         password = st.text_input("비밀번호", type="password", key="login_pass")
         if st.button("로그인 하기"):
@@ -182,13 +182,13 @@ if not st.session_state.logged_in:
                 st.query_params["user"] = username
                 st.query_params["token"] = hashlib.sha256(str.encode(username + "deep_sea_secret_salt")).hexdigest()
                 
-                st.success(f"👋 {username}님 환영합니다! 심해 탐사를 시작합니다.")
+                st.success(f"{username}님 환영합니다!")
                 st.rerun()
             else:
-                st.error("❌ 아이디 또는 비밀번호가 틀렸습니다.")
+                st.error("X 아이디 또는 비밀번호가 틀렸습니다.")
 
     elif choice == "회원가입":
-        st.subheader("새로운 물고기 계정 만들기")
+        st.subheader("새로운 계정 만들기")
         new_user = st.text_input("원하는 아이디", key="reg_user")
         new_password = st.text_input("원하는 비밀번호", type="password", key="reg_pass")
         if st.button("가입하기"):
@@ -196,9 +196,9 @@ if not st.session_state.logged_in:
                 st.warning("아이디와 비밀번호를 모두 입력해주세요.")
             else:
                 if add_user(new_user, new_password):
-                    st.success("🎉 회원가입 성공! 로그인을 진행해주세요.")
+                    st.success("회원가입 성공! 로그인을 진행해주세요.")
                 else:
-                    st.error("❌ 이미 존재하는 아이디입니다.")
+                    st.error("X 이미 존재하는 아이디입니다.")
     
     st.stop()
 
@@ -213,20 +213,20 @@ if "messages" not in st.session_state or "chat_session" not in st.session_state:
     init_new_chat()
 
 with st.sidebar:
-    st.subheader(f"🐟 {st.session_state.username} 탐험가님")
-    if st.button("🔄 새 대화 시작하기", use_container_width=True):
+    st.subheader(f"🐟 {st.session_state.username}")
+    if st.button("새 대화 시작하기", use_container_width=True):
         init_new_chat()
         st.rerun()
     st.markdown("---")
-    if st.button("🚪 로그아웃", use_container_width=True):
+    if st.button("로그아웃", use_container_width=True):
         st.session_state.logged_in = False
         st.session_state.username = ""
         st.query_params.clear()
         st.rerun()
 
 # 바다 컨셉 메인 타이틀 노출
-st.title("🐳 안녕하세요! 저는 Blue Beta-T에요")
-st.caption("심해 속 잔잔한 파도처럼, 당신이 스스로 보물 같은 답을 낚아 올릴 수 있도록 돕는 정교한 가이드입니다.")
+st.title("🐳 안녕하세요! 저는 Beta-T에요")
+st.caption("이 챗봇은 당신이 스스로 답을 찾을 수 있도록 도와줍니다.")
 
 # 바다 정렬 레이아웃 출력
 st.markdown('<div class="chat-container">', unsafe_allow_html=True)
@@ -237,14 +237,14 @@ for message in st.session_state.messages:
         st.markdown(f'<div class="chat-row ai-row"><div class="message-box ai-msg">{message["content"]}</div></div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-if user_input := st.chat_input("어떤 생각이나 고민의 그물을 던지시겠어요?"):
+if user_input := st.chat_input("도움이 필요하신가요?"):
     st.session_state.messages.append({"role": "user", "content": user_input})
     st.rerun()
 
 # 비동기 백그라운드 AI 응답 연산
 if st.session_state.get("messages") and st.session_state.messages[-1]["role"] == "user":
     user_input = st.session_state.messages[-1]["content"]
-    with st.spinner("생각의 심해를 탐색하는 중..."):
+    with st.spinner("생각하는 중..."):
         try:
             response = st.session_state.chat_session.send_message(user_input)
             ai_response = response.text
