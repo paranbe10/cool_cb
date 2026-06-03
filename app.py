@@ -22,6 +22,7 @@ css_style = """
     .chat-row {
         display: flex;
         width: 100%;
+        gap: 50px;
     }
     .user-row {
         justify-content: flex-end;
