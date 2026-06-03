@@ -46,7 +46,7 @@ css_style = """
     .ai-msg {
         background-color: #ffffff;
         color: #333333;
-        border-top-left-radius: 0px;
+        border-top-left-radius: 3px;
         border: 1px solid #e2e2e2;
     }
 </style>
