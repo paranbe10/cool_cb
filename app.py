@@ -22,7 +22,6 @@ css_style = """
     .chat-row {
         display: flex;
         width: 100%;
-        gap: 50px;
     }
     .user-row {
         justify-content: flex-end;
@@ -38,6 +37,7 @@ css_style = """
         line-height: 1.5;
         box-shadow: 0px 1px 2px rgba(0,0,0,0.1);
         word-break: break-word;
+        gap: 100px;
     }
     .user-msg {
         background-color: #fee500;
