@@ -213,41 +213,6 @@ if not st.session_state.logged_in:
                 else:
                     st.error("*(X) 이미 존재하는 아이디입니다.")
     st.stop()
-
-
-# --- 7. 메인 채팅 화면 (로그인 완료 상태) ---
-if "messages" not in st.session_state or "chat_session" not in st.session_state:
-    init_new_chat()
-
-st.title("🐳 안녕하세요! 저는 Beta-T에요")
-st.caption("이 챗봇은 당신이 스스로 답을 찾을 수 있도록 도와줍니다.")
-
-# 대화 내용 출력
-st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-for message in st.session_state.messages:
-    if message["role"] == "user":
-        st.markdown(f'<div class="chat-row user-row"><div class="message-box user-msg">{message["content"]}</div></div>', unsafe_allow_html=True)
-    else:
-        st.markdown(f'<div class="chat-row ai-row"><div class="message-box ai-msg">{message["content"]}</div></div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# 사용자 입력 처리
-if user_input := st.chat_input("도움이 필요하신가요?"):
-    st.session_state.messages.append({"role": "user", "content": user_input})
-    st.rerun()
-
-# AI 응답 연산 및 리런
-if st.session_state.get("messages") and st.session_state.messages[-1]["role"] == "user":
-    user_input = st.session_state.messages[-1]["content"]
-    with st.spinner("생각하는 중..."):
-        try:
-            response = st.session_state.chat_session.send_message(user_input)
-            ai_response = response.text
-            st.session_state.messages.append({"role": "assistant", "content": ai_response})
-            st.rerun()
-        except Exception as e:
-            st.error(f"! 오류가 발생했습니다: {e}")
-            
 # --- [부록] 관리자 전용 회원 열람 비밀 메뉴 ---
 st.markdown("---")
 with st.expander("🛠️ 시스템 관리자 전용 메뉴 (클릭)"):
@@ -271,3 +236,38 @@ with st.expander("🛠️ 시스템 관리자 전용 메뉴 (클릭)"):
             st.info("아직 가입한 회원이 없습니다.")
     elif admin_password:
         st.error("X 관리자 암호가 일치하지 않습니다.")
+
+# --- 7. 메인 채팅 화면 (로그인 완료 상태) ---
+if "messages" not in st.session_state or "chat_session" not in st.session_state:
+    init_new_chat()
+
+st.title("🐳 안녕하세요! 저는 Beta-T에요")
+st.caption("이 챗봇은 당신이 스스로 답을 찾을 수 있도록 도와줍니다.")
+
+# 대화 내용 출력
+st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+for message in st.session_state.messages:
+    if message["role"] == "user":
+        st.markdown(f'<div class="chat-row user-row"><div class="message-box user-msg">{message["content"]}</div></div>', unsafe_allow_html=True)
+    else:
+        st.markdown(f'<div class="chat-row ai-row"><div class="message-box ai-msg">{message["content"]}</div></div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+
+# 사용자 입력 처리
+if user_input := st.chat_input("도움이 필요하신가요?"):
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    st.rerun()
+
+# AI 응답 연산 및 리런
+if st.session_state.get("messages") and st.session_state.messages[-1]["role"] == "user":
+    user_input = st.session_state.messages[-1]["content"]
+    with st.spinner("생각하는 중..."):
+        try:
+            response = st.session_state.chat_session.send_message(user_input)
+            ai_response = response.text
+            st.session_state.messages.append({"role": "assistant", "content": ai_response})
+            st.rerun()
+        except Exception as e:
+            st.error(f"! 오류가 발생했습니다: {e}")
+            
