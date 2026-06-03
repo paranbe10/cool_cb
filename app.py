@@ -246,7 +246,7 @@ if st.session_state.show_admin:
     admin_password = st.text_input("마스터 권한 인증 암호를 입력하세요", type="password", key="admin_menu_pass")
     
     # 본인만 알 수 있는 마스터 비밀번호 설정 (예: admin1234)
-    if admin_password == "김나미바보똥": 
+    if admin_password == "h123h123": 
         st.success("인증 완료. 실시간 회원 명부를 로드했습니다.")
         conn = sqlite3.connect("users.db")
         cursor = conn.cursor()
