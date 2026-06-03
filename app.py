@@ -198,7 +198,7 @@ if not st.session_state.logged_in:
                 st.success(f"{username}님 환영합니다!")
                 st.rerun()
             else:
-                st.error("X 아이디 또는 비밀번호가 틀렸습니다.")
+                st.error("(X) 아이디 또는 비밀번호가 틀렸습니다.")
 
     elif choice == "회원가입":
         st.subheader("새로운 계정 만들기")
@@ -211,7 +211,7 @@ if not st.session_state.logged_in:
                 if add_user(new_user, new_password):
                     st.success("회원가입 성공! 로그인을 진행해주세요.")
                 else:
-                    st.error("X 이미 존재하는 아이디입니다.")
+                    st.error("*(X) 이미 존재하는 아이디입니다.")
     st.stop()
 
 
@@ -246,4 +246,4 @@ if st.session_state.get("messages") and st.session_state.messages[-1]["role"] ==
             st.session_state.messages.append({"role": "assistant", "content": ai_response})
             st.rerun()
         except Exception as e:
-            st.error(f"오류가 발생했습니다: {e}")
+            st.error(f"! 오류가 발생했습니다: {e}")
