@@ -225,7 +225,7 @@ with st.sidebar:
         st.rerun()
 
 # 바다 컨셉 메인 타이틀 노출
-st.title("🐳 안녕하세요 ,"username", 님! 저는 Beta-T에요")
+st.title("🐳 안녕하세요",username, "님! 저는 Beta-T에요")
 st.caption("이 챗봇은 당신이 스스로 답을 찾을 수 있도록 도와줍니다.")
 
 # 바다 정렬 레이아웃 출력
