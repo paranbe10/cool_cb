@@ -37,18 +37,11 @@ css_style = """
         line-height: 1.5;
         box-shadow: 0px 1px 2px rgba(0,0,0,0.1);
         word-break: break-word;
-        gap: 100px;
     }
     .user-msg {
         background-color: #fee500;
         color: #191919;
         border-top-right-radius: 0px;
-    }
-    .ai-msg {
-        background-color: #ffffff;
-        color: #333333;
-        border-top-left-radius: 0px;
-        border: 1px solid #e2e2e2;
     }
 </style>
 """
