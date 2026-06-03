@@ -194,7 +194,7 @@ with st.sidebar:
     
     # 클래스 주입으로 크기와 투명도를 극대화한 ⚙️ 버튼
     st.markdown('<div class="admin-secret-btn">', unsafe_allow_html=True)
-    if st.button("⚙️"):
+    if st.button("관리자"):
         st.session_state.show_admin = not st.session_state.show_admin
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
