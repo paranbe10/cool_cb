@@ -102,6 +102,21 @@ auto_theme_css = """
     .user-msg { background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%); color: #ffffff !important; border-radius: 24px 24px 4px 24px; box-shadow: 0px 4px 12px rgba(0, 180, 216, 0.15); font-weight: 500; }
     .user-msg * { color: #ffffff !important; }
 
+/* 🚨 [핵심 수정] 왼쪽 하단 관리자 비밀 진입 버튼을 ㅈㄴ 작게 만드는 CSS 테러 */
+    div.admin-secret-btn > button {
+        background-color: transparent !important;
+        border: none !important;
+        color: #94a3b844 !important; /* 거의 안 보이게 흐릿한 회색 처리 */
+        font-size: 10px !important;
+        padding: 0px !important;
+        min-height: 20px !important;
+        width: auto !important;
+        box-shadow: none !important;
+    }
+    div.admin-secret-btn > button:hover {
+        color: #00b4d8 !important; /* 마우스를 올릴 때만 슬쩍 파란빛 유혹 */
+        background-color: transparent !important;
+    }
 
     /* 🌙 [1] 사용자가 다크 모드일 때 브라우저가 알아서 켜는 스타일 */
     @media (prefers-color-scheme: dark) {
@@ -213,30 +228,7 @@ if not st.session_state.logged_in:
                 else:
                     st.error("*(X) 이미 존재하는 아이디입니다.")
     st.stop()
-# --- [부록] 관리자 전용 회원 열람 비밀 메뉴 ---
-st.markdown("---")
-with st.expander("🛠️ 시스템 관리자 전용 메뉴 (클릭)"):
-    admin_password = st.text_input("관리자 인증 암호를 입력하세요", type="password", key="admin_menu_pass")
     
-    # 본인만 알 수 있는 마스터 비밀번호 설정 (예: admin1234)
-    if admin_password == "admin1234": 
-        st.success("인증 성공! 회원 목록을 불러옵니다.")
-        conn = sqlite3.connect("users.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT username, password FROM users")
-        rows = cursor.fetchall()
-        conn.close()
-        
-        # 표(Table) 형태로 깔끔하게 출력
-        import pandas as pd
-        if rows:
-            df = pd.DataFrame(rows, columns=["아이디 (Username)", "암호화된 비번 (Hash)"])
-            st.dataframe(df, use_container_width=True)
-        else:
-            st.info("아직 가입한 회원이 없습니다.")
-    elif admin_password:
-        st.error("X 관리자 암호가 일치하지 않습니다.")
-
 # --- 7. 메인 채팅 화면 (로그인 완료 상태) ---
 if "messages" not in st.session_state or "chat_session" not in st.session_state:
     init_new_chat()
