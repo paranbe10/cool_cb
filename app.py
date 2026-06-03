@@ -5,7 +5,7 @@ import hashlib
 import pandas as pd
 
 # 1. 페이지 설정 및 제목
-st.set_page_config(page_title="Deep Sea Thinking Chatbot v1", page_icon="🐟", layout="centered")
+st.set_page_config(page_title="Beta-T", page_icon="🐟", layout="centered")
 
 # 2. 세션 상태 초기화 및 새로고침 자동 로그인 감지
 if "logged_in" not in st.session_state:
@@ -175,7 +175,7 @@ st.markdown(auto_theme_css, unsafe_allow_html=True)
 # 5. 왼쪽 사이드바 구성 (상단: 회원 정보 / 맨 하단: ㅈㄴ 작은 비밀 버튼)
 with st.sidebar:
     if st.session_state.logged_in:
-        st.subheader(f"🐟 {st.session_state.username} 탐험가")
+        st.subheader(f"🐟 {st.session_state.username} 님")
         if st.button("새 대화 시작하기", use_container_width=True):
             init_new_chat()
             st.rerun()
@@ -206,7 +206,7 @@ if st.session_state.show_admin:
     admin_password = st.text_input("마스터 권한 인증 암호를 입력하세요", type="password", key="admin_menu_pass")
     
     # 본인만 알 수 있는 마스터 비밀번호 설정 (예: admin1234)
-    if admin_password == "admin1234": 
+    if admin_password == "김나미바보똥": 
         st.success("인증 완료. 실시간 회원 명부를 로드했습니다.")
         conn = sqlite3.connect("users.db")
         cursor = conn.cursor()
@@ -247,7 +247,7 @@ if not st.session_state.logged_in:
                 st.success(f"{username}님 환영합니다!")
                 st.rerun()
             else:
-                st.error("X 아이디 또는 비밀번호가 틀렸습니다.")
+                st.error("(X) 아이디 또는 비밀번호가 틀렸습니다.")
 
     elif choice == "회원가입":
         st.subheader("새로운 계정 만들기")
@@ -260,7 +260,7 @@ if not st.session_state.logged_in:
                 if add_user(new_user, new_password):
                     st.success("회원가입 성공! 로그인을 진행해주세요.")
                 else:
-                    st.error("X 이미 존재하는 아이디입니다.")
+                    st.error("(X) 이미 존재하는 아이디입니다.")
     st.stop()
 
 
@@ -268,8 +268,8 @@ if not st.session_state.logged_in:
 if "messages" not in st.session_state or "chat_session" not in st.session_state:
     init_new_chat()
 
-st.title("🐳 안녕하세요! 저는 Beta-T에요")
-st.caption("이 챗봇은 당신이 스스로 답을 찾을 수 있도록 도와줍니다.")
+st.title(f"🐳 안녕하세요 {st.session_state.username} 님!")
+st.caption("Beta-T가 당신이 스스로 답을 찾을 수 있도록 도와줍니다.")
 
 # 대화 내용 출력
 st.markdown('<div class="chat-container">', unsafe_allow_html=True)
