@@ -10,7 +10,7 @@ st.set_page_config(page_title="Self Thinking Chatbot v1", page_icon="❔", layou
 css_style = """
 <style>
     .stApp {
-        background-color: #f5f5f5;
+        background-color: #000000;
     }
     .chat-container {
         display: flex;
