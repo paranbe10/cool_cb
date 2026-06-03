@@ -149,5 +149,5 @@ if not st.session_state.logged_in:
 
     elif choice == "회원가입":
         st.subheader("새로운 계정 만들기")
-        new_user = st.text_input("원하는 아이디", key="reg_user")
+        new_user = st.text_input("원하는 아이디",key="reg_user")
         new_password = st.text_input("원하는 비밀
