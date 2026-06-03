@@ -3,15 +3,19 @@ import google.generativeai as genai
 import sqlite3
 import hashlib
 
-# 1. 페이지 설정 및 제목 (초안 설정 100% 유지)
-st.set_page_config(page_title="Self Thinking Chatbot v1", page_icon="❔", layout="centered")
+# 1. 페이지 설정 및 제목 (물고기 및 바다 컨셉 아이콘 변경)
+st.set_page_config(page_title="Deep Sea Thinking Chatbot v1", page_icon="🐟", layout="centered")
 
-# CSS 스타일 주입
+# CSS 스타일 주입 (심해/물고기 톤앤매너 테마 적용)
 css_style = """
 <style>
+    /* 앱 전체 배경을 깊은 심해 네이비 색상으로 변경 */
     .stApp {
-        background-color: #000000;
+        background-color: #031525;
+        color: #e0f2fe;
     }
+    
+    /* 대화 컨테이너 간격 (요청하신 50px 유지) */
     .chat-container {
         display: flex;
         flex-direction: column;
@@ -29,19 +33,42 @@ css_style = """
     .ai-row {
         justify-content: flex-start;
     }
+    
+    /* 말풍선 스타일을 물방울/물고기 유선형 느낌으로 조정 및 네온 광채 효과 */
     .message-box {
-        padding: 12px 16px;
-        border-radius: 16px;
+        padding: 14px 18px;
+        border-radius: 20px;
         max-width: 75%;
         font-size: 15px;
-        line-height: 1.5;
-        box-shadow: 0px 1px 2px rgba(0,0,0,0.1);
+        line-height: 1.6;
+        box-shadow: 0px 4px 15px rgba(0, 180, 216, 0.2);
         word-break: break-word;
     }
+    
+    /* 사용자 말풍선: 청량한 산호초 해변의 에메랄드 블루 */
     .user-msg {
-        background-color: #fee500;
-        color: #191919;
+        background-color: #00b4d8;
+        color: #ffffff;
         border-top-right-radius: 0px;
+    }
+    
+    /* AI 말풍선: 심해 속 신비로운 잠수함 가이드 테마 (어두운 블루 톤) */
+    .ai-msg {
+        background-color: #123446;
+        color: #e0f2fe;
+        border-top-left-radius: 0px;
+        border: 1px solid #0077b6;
+    }
+    
+    /* 텍스트 가독성을 위해 기본 Streamlit 글자 색상 보정 */
+    h1, h2, h3, p, span, label, .stMarkdown {
+        color: #e0f2fe !important;
+    }
+    
+    /* 사이드바 스타일 바다 느낌으로 통일 */
+    [data-testid="stSidebar"] {
+        background-color: #020c1b !important;
+        border-right: 1px solid #0077b6;
     }
 </style>
 """
@@ -116,33 +143,48 @@ You are a strict Socratic guide and cognitive coach. Your primary objective is t
 * Validating: Always acknowledge the user's feelings or struggles first before asking the next question.
 """
 
-# 5. 세션 상태 초기화
+# 5. 세션 상태 초기화 및 새로고침 자동 로그인 감지
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "username" not in st.session_state:
     st.session_state.username = ""
 
-# --- [구조 변경] 1. 비로그인 상태면 여기서 화면을 그리고 무조건 멈춤 ---
+# [기능 추가] URL 쿼리 파라미터를 확인하여 새로고침 시 로그인 상태 자동 복구
+if not st.session_state.logged_in and "user" in st.query_params and "token" in st.query_params:
+    saved_user = st.query_params["user"]
+    saved_token = st.query_params["token"]
+    # 조작 방지를 위한 보안 토큰 검증 수식 (유저명 + 커스텀 키 조합 해시 생성)
+    expected_token = hashlib.sha256(str.encode(saved_user + "deep_sea_secret_salt")).hexdigest()
+    if saved_token == expected_token:
+        st.session_state.logged_in = True
+        st.session_state.username = saved_user
+
+# --- [구조 유지] 1. 비로그인 상태면 여기서 화면을 그리고 무조건 멈춤 ---
 if not st.session_state.logged_in:
-    st.title("🔐 대화 공간 입장하기")
+    st.title("🔐 바다 대화 공간 입장하기")
     menu = ["로그인", "회원가입"]
     choice = st.selectbox("원하는 작업을 선택하세요", menu)
 
     if choice == "로그인":
-        st.subheader("로그인")
+        st.subheader("심해 잠수 로그인")
         username = st.text_input("아이디", key="login_user")
         password = st.text_input("비밀번호", type="password", key="login_pass")
         if st.button("로그인 하기"):
             if login_user(username, password):
                 st.session_state.logged_in = True
                 st.session_state.username = username
-                st.success(f"👋 {username}님 환영합니다!")
+                
+                # [기능 추가] 새로고침 유지를 위해 브라우저 URL 창에 검증 토큰 심기
+                st.query_params["user"] = username
+                st.query_params["token"] = hashlib.sha256(str.encode(username + "deep_sea_secret_salt")).hexdigest()
+                
+                st.success(f"👋 {username}님 환영합니다! 심해 탐사를 시작합니다.")
                 st.rerun()
             else:
                 st.error("❌ 아이디 또는 비밀번호가 틀렸습니다.")
 
     elif choice == "회원가입":
-        st.subheader("새로운 계정 만들기")
+        st.subheader("새로운 물고기 계정 만들기")
         new_user = st.text_input("원하는 아이디", key="reg_user")
         new_password = st.text_input("원하는 비밀번호", type="password", key="reg_pass")
         if st.button("가입하기"):
@@ -154,10 +196,10 @@ if not st.session_state.logged_in:
                 else:
                     st.error("❌ 이미 존재하는 아이디입니다.")
     
-    st.stop()  # 로그인 안 됬으면 여기서 코드 실행 강제 종료 (하단 코드로 안 넘어감)
+    st.stop()  # 로그인 안 되었으면 하단 메인 화면 코드로 안 넘어가고 차단
 
 
-# --- [구조 변경] 2. 로그인 완료된 상태 (else문을 없애고 맨 앞으로 정렬) ---
+# --- [구조 유지] 2. 로그인 완료된 상태 (에러 방지를 위해 맨 앞으로 일렬 정렬) ---
 def init_new_chat():
     st.session_state.messages = []
     model = genai.GenerativeModel(model_name="gemini-2.5-flash", system_instruction=system_instruction)
@@ -167,7 +209,7 @@ if "messages" not in st.session_state or "chat_session" not in st.session_state:
     init_new_chat()
 
 with st.sidebar:
-    st.subheader(f"👤 {st.session_state.username}님")
+    st.subheader(f"🐟 {st.session_state.username} 탐험가님")
     if st.button("🔄 새 대화 시작하기", use_container_width=True):
         init_new_chat()
         st.rerun()
@@ -175,13 +217,15 @@ with st.sidebar:
     if st.button("🚪 로그아웃", use_container_width=True):
         st.session_state.logged_in = False
         st.session_state.username = ""
+        # [기능 추가] 로그아웃 시 URL에 심어둔 로그인 파라미터도 완전히 삭제
+        st.query_params.clear()
         st.rerun()
 
-# 초안 메인 타이틀 노출
-st.title("안녕하세요! 저는 Beta-T에요")
-st.caption("이 챗봇은 당신이 스스로 답을 찾을 수 있도록 도와줍니다.")
+# 바다 컨셉 메인 타이틀 노출
+st.title("🐳 안녕하세요! 저는 Blue Beta-T에요")
+st.caption("심해 속 잔잔한 파도처럼, 당신이 스스로 보물 같은 답을 낚아 올릴 수 있도록 돕는 정교한 가이드입니다.")
 
-# 카카오톡 정렬 레이아웃 출력
+# 바다 정렬 레이아웃 출력
 st.markdown('<div class="chat-container">', unsafe_allow_html=True)
 for message in st.session_state.messages:
     if message["role"] == "user":
@@ -190,14 +234,14 @@ for message in st.session_state.messages:
         st.markdown(f'<div class="chat-row ai-row"><div class="message-box ai-msg">{message["content"]}</div></div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-if user_input := st.chat_input("어떤 생각이나 고민을 나누고 싶으신가요?"):
+if user_input := st.chat_input("어떤 생각이나 고민의 그물을 던지시겠어요?"):
     st.session_state.messages.append({"role": "user", "content": user_input})
     st.rerun()
 
 # 비동기 백그라운드 AI 응답 연산
 if st.session_state.get("messages") and st.session_state.messages[-1]["role"] == "user":
     user_input = st.session_state.messages[-1]["content"]
-    with st.spinner("생각을 가다듬는 중..."):
+    with st.spinner("생각의 심해를 탐색하는 중..."):
         try:
             response = st.session_state.chat_session.send_message(user_input)
             ai_response = response.text
