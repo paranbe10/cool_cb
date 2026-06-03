@@ -128,7 +128,7 @@ if "logged_in" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state.username = ""
 
-# --- 화면 분기 1: 비로그인 상태 ---
+# --- [구조 변경] 1. 비로그인 상태면 여기서 화면을 그리고 무조건 멈춤 ---
 if not st.session_state.logged_in:
     st.title("🔐 대화 공간 입장하기")
     menu = ["로그인", "회원가입"]
@@ -150,16 +150,4 @@ if not st.session_state.logged_in:
     elif choice == "회원가입":
         st.subheader("새로운 계정 만들기")
         new_user = st.text_input("원하는 아이디", key="reg_user")
-        new_password = st.text_input("원하는 비밀번호", type="password", key="reg_pass")
-        if st.button("가입하기"):
-            if not new_user.strip() or not new_password.strip():
-                st.warning("아이디와 비밀번호를 모두 입력해주세요.")
-            else:
-                if add_user(new_user, new_password):
-                    st.success("🎉 회원가입 성공! 로그인을 진행해주세요.")
-                else:
-                    st.error("❌ 이미 존재하는 아이디입니다.")
-
-# --- 화면 분기 2: 로그인 완료 상태 ---
-else:
-    # 오류 방지를 위해 함수 내부의 모델 선언문 괄호를 한 줄로 완
+        new_password = st.text_input("원하는 비밀
